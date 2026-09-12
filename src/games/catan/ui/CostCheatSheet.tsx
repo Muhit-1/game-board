@@ -48,7 +48,7 @@ const COSTS: CostRow[] = [
 
 export function CostCheatSheet() {
   return (
-    <Panel title="Costs" icon={<Coins size={13} />}>
+    <Panel title="Costs" icon={<Coins size={13} />} collapsible={false}>
       <div className="flex flex-col gap-2.5">
         {COSTS.map((row) => (
           <div key={row.label} className="flex items-center justify-between gap-2 border-b border-[var(--line)] pb-2.5 last:border-0 last:pb-0">

@@ -41,7 +41,7 @@ export function BoardView({ board, players, buildMode, currentPlayerGem, onVerte
   const gemBySlot = useMemo(() => new Map(players.map((p) => [p.slot, p.gem])), [players]);
 
   const viewBox = useMemo(() => {
-    const pad = 90;
+    const pad = 55;
     const xs = board.vertices.map((v) => v.x);
     const ys = board.vertices.map((v) => v.y);
     const minX = Math.min(...xs) - pad;
@@ -108,13 +108,14 @@ export function BoardView({ board, players, buildMode, currentPlayerGem, onVerte
         const v2 = vertexById.get(edge.v2)!;
         const mx = (v1.x + v2.x) / 2;
         const my = (v1.y + v2.y) / 2;
-        const dist = Math.hypot(mx - centroid.x, my - centroid.y) + 46;
+        const dist = Math.hypot(mx - centroid.x, my - centroid.y) + 32;
         const hx = centroid.x + Math.cos(harbor.angle) * dist;
         const hy = centroid.y + Math.sin(harbor.angle) * dist;
         return (
           <g key={harbor.id}>
-            <line x1={mx} y1={my} x2={hx} y2={hy} stroke="var(--parchment-dim)" strokeWidth={1.5} strokeDasharray="3 4" opacity={0.6} />
-            <circle cx={hx} cy={hy} r={17} fill="var(--walnut)" stroke={harborColor(harbor.type)} strokeWidth={2} />
+            <line x1={hx} y1={hy} x2={v1.x} y2={v1.y} stroke="var(--parchment-dim)" strokeWidth={1.5} strokeDasharray="3 4" opacity={0.6} />
+            <line x1={hx} y1={hy} x2={v2.x} y2={v2.y} stroke="var(--parchment-dim)" strokeWidth={1.5} strokeDasharray="3 4" opacity={0.6} />
+            <circle cx={hx} cy={hy} r={15} fill="var(--walnut)" stroke={harborColor(harbor.type)} strokeWidth={2} />
             <text
               x={hx}
               y={hy}

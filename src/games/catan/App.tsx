@@ -1,5 +1,6 @@
-import { useReducer } from 'react';
+import { useReducer, useRef, useState } from 'react';
 import { createInitialState, gameReducer } from './state';
+import { canPlaceRoad, canPlaceSettlement, canUpgradeToCity } from './rules';
 import { SetupScreen } from './setup/SetupScreen';
 import { BoardView } from './board/BoardView';
 import { TopLeftWidget } from './ui/TopLeftWidget';
@@ -8,9 +9,26 @@ import { CostCheatSheet } from './ui/CostCheatSheet';
 import { DevCardLegendPanel } from './ui/DevCardLegendPanel';
 import { ResourcesHarborsLegend } from './ui/ResourcesHarborsLegend';
 import { BoardActions } from './ui/BoardActions';
+import { Toast } from '../../shared/components/Toast';
+import { ConfirmDialog } from '../../shared/components/ConfirmDialog';
+
+interface ConfirmState {
+  message: string;
+  confirmLabel: string;
+  onConfirm: () => void;
+}
 
 export function App() {
   const [state, dispatch] = useReducer(gameReducer, undefined, createInitialState);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [confirmState, setConfirmState] = useState<ConfirmState | null>(null);
+  const noticeTimeout = useRef<number | null>(null);
+
+  function showNotice(message: string) {
+    setNotice(message);
+    if (noticeTimeout.current) window.clearTimeout(noticeTimeout.current);
+    noticeTimeout.current = window.setTimeout(() => setNotice(null), 2800);
+  }
 
   if (state.phase === 'setup') {
     return <SetupScreen state={state} dispatch={dispatch} />;
@@ -19,7 +37,13 @@ export function App() {
   const currentPlayer = state.players.find((p) => p.slot === state.currentPlayerSlot);
 
   function handleVertexClick(vertexId: number) {
-    if (state.buildMode === 'settlement' || state.buildMode === 'city') {
+    if (state.buildMode === 'settlement') {
+      const result = canPlaceSettlement(state.board, vertexId);
+      if (!result.valid) return showNotice(result.reason!);
+      dispatch({ type: 'PLACE_BUILDING', vertexId });
+    } else if (state.buildMode === 'city') {
+      const result = canUpgradeToCity(state.board, vertexId, state.currentPlayerSlot);
+      if (!result.valid) return showNotice(result.reason!);
       dispatch({ type: 'PLACE_BUILDING', vertexId });
     } else if (state.buildMode === 'erase') {
       const vertex = state.board.vertices.find((v) => v.id === vertexId);
@@ -29,6 +53,8 @@ export function App() {
 
   function handleEdgeClick(edgeId: number) {
     if (state.buildMode === 'road') {
+      const result = canPlaceRoad(state.board, edgeId);
+      if (!result.valid) return showNotice(result.reason!);
       dispatch({ type: 'PLACE_ROAD', edgeId });
     } else if (state.buildMode === 'erase') {
       const edge = state.board.edges.find((e) => e.id === edgeId);
@@ -38,6 +64,28 @@ export function App() {
 
   function handleHexClick(hexId: number) {
     if (state.buildMode === 'robber') dispatch({ type: 'MOVE_ROBBER', hexId });
+  }
+
+  function requestShuffle() {
+    setConfirmState({
+      message: 'Shuffle the board? This clears all buildings, roads, the robber position, and scores.',
+      confirmLabel: 'Shuffle',
+      onConfirm: () => {
+        dispatch({ type: 'SHUFFLE_BOARD' });
+        setConfirmState(null);
+      },
+    });
+  }
+
+  function requestNewGame() {
+    setConfirmState({
+      message: 'Start a new game? This clears the board, the player roster, and all scores.',
+      confirmLabel: 'New Game',
+      onConfirm: () => {
+        dispatch({ type: 'NEW_GAME' });
+        setConfirmState(null);
+      },
+    });
   }
 
   return (
@@ -54,32 +102,43 @@ export function App() {
         />
       </div>
 
-      <div className="pointer-events-none absolute inset-0 flex flex-col justify-between p-4">
-        <div className="flex items-start justify-between gap-3">
+      <div className="pointer-events-none fixed inset-0 z-10 flex justify-between gap-3 p-4">
+        {/* Left column: its own top/middle/bottom stack, entirely independent of the right column */}
+        <div className="flex flex-col items-start justify-between">
           <div className="pointer-events-auto">
             <TopLeftWidget state={state} dispatch={dispatch} />
           </div>
           <div className="pointer-events-auto">
-            <ScorePanel state={state} dispatch={dispatch} />
+            <BoardActions onShuffle={requestShuffle} onNewGame={requestNewGame} onOpenSetup={() => dispatch({ type: 'REOPEN_SETUP' })} />
           </div>
-        </div>
-
-        <div className="flex items-center justify-between gap-3">
-          <BoardActions dispatch={dispatch} />
-          <div className="pointer-events-auto">
-            <ResourcesHarborsLegend board={state.board} />
-          </div>
-        </div>
-
-        <div className="flex items-end justify-between gap-3">
           <div className="pointer-events-auto">
             <CostCheatSheet />
+          </div>
+        </div>
+
+        {/* Right column: its own top/middle/bottom stack — expanding one never moves the left column */}
+        <div className="flex flex-col items-end justify-between">
+          <div className="pointer-events-auto">
+            <ScorePanel state={state} dispatch={dispatch} />
+          </div>
+          <div className="pointer-events-auto">
+            <ResourcesHarborsLegend board={state.board} />
           </div>
           <div className="pointer-events-auto">
             <DevCardLegendPanel state={state} dispatch={dispatch} />
           </div>
         </div>
       </div>
+
+      <Toast message={notice} />
+      {confirmState && (
+        <ConfirmDialog
+          message={confirmState.message}
+          confirmLabel={confirmState.confirmLabel}
+          onConfirm={confirmState.onConfirm}
+          onCancel={() => setConfirmState(null)}
+        />
+      )}
     </div>
   );
 }

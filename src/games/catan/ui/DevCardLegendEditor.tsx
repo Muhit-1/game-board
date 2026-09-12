@@ -29,13 +29,13 @@ export function DevCardLegendEditor({ rows, onChange }: DevCardLegendEditorProps
             value={row.label}
             onChange={(e) => updateRow(row.id, 'label', e.target.value)}
             placeholder="Card"
-            className="w-[38%] min-w-0 rounded-md border border-[var(--line)] bg-charred-oak px-2 py-1.5 text-[12px] text-parchment outline-none focus:border-brass"
+            className="w-[38%] min-w-0 rounded-md border border-[var(--line)] bg-charred-oak px-2 py-1.5 text-[12px] text-parchment placeholder:text-parchment-dim/70 outline-none focus:border-brass"
           />
           <input
             value={row.meaning}
             onChange={(e) => updateRow(row.id, 'meaning', e.target.value)}
             placeholder="Meaning"
-            className="min-w-0 flex-1 rounded-md border border-[var(--line)] bg-charred-oak px-2 py-1.5 text-[12px] text-parchment outline-none focus:border-brass"
+            className="min-w-0 flex-1 rounded-md border border-[var(--line)] bg-charred-oak px-2 py-1.5 text-[12px] text-parchment placeholder:text-parchment-dim/70 outline-none focus:border-brass"
           />
           <IconButton title="Remove row" variant="danger" onClick={() => removeRow(row.id)}>
             <Trash2 size={13} />
