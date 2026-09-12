@@ -1,0 +1,5 @@
+@import './ironwood-tavern.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

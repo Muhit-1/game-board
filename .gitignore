@@ -2,3 +2,9 @@ theme-ironwood-tavern.html
 theme-onyx-table.html
 game-board-project-prompt.md
 
+node_modules/
+dist/
+.DS_Store
+*.local
+*.tsbuildinfo
+

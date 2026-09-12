@@ -1,0 +1,74 @@
+/* Ironwood Tavern Board — theme tokens (see /theme-ironwood-tavern.html for the reference sheet) */
+:root {
+  --charred-oak: #241a12;
+  --walnut: #3c2a1c;
+  --walnut-2: #4a3423;
+  --brass: #c9903f;
+  --brass-soft: #e2b876;
+  --parchment: #ede1c8;
+  --parchment-dim: #c9bb9d;
+  --ember: #b5502e;
+  --moss: #6f8a5c;
+  --line: rgba(237, 225, 200, 0.14);
+  --shadow-deep: 0 24px 60px rgba(0, 0, 0, 0.55);
+
+  /* resource colors */
+  --res-forest: #3f7d3a;
+  --res-pasture: #8ac13f;
+  --res-fields: #e0b23a;
+  --res-hills: #c2652f;
+  --res-mountains: #8a8f97;
+  --res-desert: #d8c39a;
+}
+
+@font-face {
+  font-family: 'Fraunces';
+  src: local('Fraunces');
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--charred-oak);
+  color: var(--parchment);
+  font-family: 'Karla', sans-serif;
+}
+
+body {
+  background:
+    radial-gradient(1100px 700px at 12% -10%, rgba(201, 144, 63, 0.1), transparent 55%),
+    radial-gradient(900px 600px at 100% 10%, rgba(181, 80, 46, 0.08), transparent 50%),
+    repeating-linear-gradient(180deg, rgba(0, 0, 0, 0) 0px, rgba(0, 0, 0, 0.05) 2px, rgba(0, 0, 0, 0) 4px),
+    var(--charred-oak);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+::selection {
+  background: var(--brass);
+  color: var(--charred-oak);
+}
+
+.scrollbar-ironwood {
+  scrollbar-width: thin;
+  scrollbar-color: var(--brass) var(--walnut);
+}
+.scrollbar-ironwood::-webkit-scrollbar {
+  width: 8px;
+}
+.scrollbar-ironwood::-webkit-scrollbar-track {
+  background: var(--walnut);
+}
+.scrollbar-ironwood::-webkit-scrollbar-thumb {
+  background: var(--brass);
+  border-radius: 999px;
+}
