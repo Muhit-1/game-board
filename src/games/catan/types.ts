@@ -54,7 +54,8 @@ export interface Board {
 
 export interface Player {
   slot: number;
-  gem: string | null;
+  /** Auto-assigned by slot order — players don't choose a gem. */
+  gem: string;
 }
 
 export interface DevCardLegendRow {

@@ -7,7 +7,6 @@ import { TopLeftWidget } from './ui/TopLeftWidget';
 import { ScorePanel } from './ui/ScorePanel';
 import { CostCheatSheet } from './ui/CostCheatSheet';
 import { DevCardLegendPanel } from './ui/DevCardLegendPanel';
-import { ResourcesHarborsLegend } from './ui/ResourcesHarborsLegend';
 import { BoardActions } from './ui/BoardActions';
 import { Toast } from '../../shared/components/Toast';
 import { ConfirmDialog } from '../../shared/components/ConfirmDialog';
@@ -38,7 +37,7 @@ export function App() {
 
   function handleVertexClick(vertexId: number) {
     if (state.buildMode === 'settlement') {
-      const result = canPlaceSettlement(state.board, vertexId);
+      const result = canPlaceSettlement(state.board, vertexId, state.currentPlayerSlot);
       if (!result.valid) return showNotice(result.reason!);
       dispatch({ type: 'PLACE_BUILDING', vertexId });
     } else if (state.buildMode === 'city') {
@@ -53,7 +52,7 @@ export function App() {
 
   function handleEdgeClick(edgeId: number) {
     if (state.buildMode === 'road') {
-      const result = canPlaceRoad(state.board, edgeId);
+      const result = canPlaceRoad(state.board, edgeId, state.currentPlayerSlot);
       if (!result.valid) return showNotice(result.reason!);
       dispatch({ type: 'PLACE_ROAD', edgeId });
     } else if (state.buildMode === 'erase') {
@@ -120,9 +119,6 @@ export function App() {
         <div className="flex flex-col items-end justify-between">
           <div className="pointer-events-auto">
             <ScorePanel state={state} dispatch={dispatch} />
-          </div>
-          <div className="pointer-events-auto">
-            <ResourcesHarborsLegend board={state.board} />
           </div>
           <div className="pointer-events-auto">
             <DevCardLegendPanel state={state} dispatch={dispatch} />

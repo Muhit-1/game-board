@@ -23,4 +23,5 @@ export {
   X,
   Check,
   Minus,
+  Github,
 } from 'lucide-react';

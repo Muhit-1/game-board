@@ -110,9 +110,16 @@ export function generateBoard(): Board {
     const v2 = vertices.find((v) => v.id === edge.v2)!;
     const mx = (v1.x + v2.x) / 2;
     const my = (v1.y + v2.y) / 2;
-    return { edge, angle: Math.atan2(my - centroid.y, mx - centroid.x) };
+    // Sort by angle around the board centroid purely to pick evenly-spaced boundary edges below.
+    const sortAngle = Math.atan2(my - centroid.y, mx - centroid.x);
+    // The rendering direction must point away from this edge's OWN hex, not the board centroid —
+    // on this board's non-convex outline, the centroid direction can point back across the coast,
+    // landing the harbor marker on top of a neighboring hex instead of floating just offshore.
+    const ownerHex = hexes.find((h) => h.id === edge.hexIds[0])!;
+    const outwardAngle = Math.atan2(my - ownerHex.y, mx - ownerHex.x);
+    return { edge, sortAngle, outwardAngle };
   });
-  withAngle.sort((a, b) => a.angle - b.angle);
+  withAngle.sort((a, b) => a.sortAngle - b.sortAngle);
 
   const harborTypes = harborPool();
   const harbors: Board['harbors'] = [];
@@ -123,7 +130,7 @@ export function generateBoard(): Board {
     const candidate = withAngle[Math.floor(cursor) % withAngle.length];
     const sharesVertex = usedVertices.has(candidate.edge.v1) || usedVertices.has(candidate.edge.v2);
     if (!sharesVertex) {
-      harbors.push({ id: i, edgeId: candidate.edge.id, type: harborTypes[i], angle: candidate.angle });
+      harbors.push({ id: i, edgeId: candidate.edge.id, type: harborTypes[i], angle: candidate.outwardAngle });
       usedVertices.add(candidate.edge.v1);
       usedVertices.add(candidate.edge.v2);
       i++;

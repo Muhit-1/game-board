@@ -19,6 +19,7 @@ export default {
         display: ['Fraunces', 'serif'],
         body: ['Karla', 'sans-serif'],
         mono: ['"JetBrains Mono"', 'monospace'],
+        pop: ['Fredoka', 'sans-serif'],
       },
       boxShadow: {
         deep: '0 24px 60px rgba(0,0,0,.55)',

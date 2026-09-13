@@ -22,3 +22,8 @@ export const GEMS: GemDef[] = [
 export function getGem(id: string | null): GemDef | undefined {
   return GEMS.find((g) => g.id === id);
 }
+
+/** Players don't choose a gem — each slot gets the next one in a fixed order, same every game. */
+export function gemForSlot(slot: number): GemDef {
+  return GEMS[slot % GEMS.length];
+}

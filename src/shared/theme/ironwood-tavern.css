@@ -1,6 +1,6 @@
 /* Ironwood Tavern Board — theme tokens (see /theme-ironwood-tavern.html for the reference sheet) */
 :root {
-  --charred-oak: #241a12;
+  --charred-oak: #2b2016;
   --walnut: #3c2a1c;
   --walnut-2: #4a3423;
   --brass: #c9903f;
@@ -19,6 +19,11 @@
   --res-hills: #c2652f;
   --res-mountains: #8a8f97;
   --res-desert: #d8c39a;
+
+  /* hub light theme — deliberately separate from the tavern chrome above */
+  --hub-ink: #4a3520;
+  --hub-ink-dim: #8a7758;
+  --hub-line: rgba(74, 53, 32, 0.12);
 }
 
 @font-face {
@@ -36,17 +41,30 @@ html,
 body {
   margin: 0;
   padding: 0;
-  background: var(--charred-oak);
-  color: var(--parchment);
   font-family: 'Karla', sans-serif;
 }
 
-body {
+/* Catan board page — the dark tavern chrome, scoped so it never leaks onto the hub */
+body.theme-tavern {
+  background: var(--charred-oak);
+  color: var(--parchment);
+}
+
+body.theme-tavern {
   background:
-    radial-gradient(1100px 700px at 12% -10%, rgba(201, 144, 63, 0.1), transparent 55%),
-    radial-gradient(900px 600px at 100% 10%, rgba(181, 80, 46, 0.08), transparent 50%),
-    repeating-linear-gradient(180deg, rgba(0, 0, 0, 0) 0px, rgba(0, 0, 0, 0.05) 2px, rgba(0, 0, 0, 0) 4px),
+    radial-gradient(1100px 700px at 12% -10%, rgba(201, 144, 63, 0.17), transparent 55%),
+    radial-gradient(900px 600px at 100% 10%, rgba(181, 80, 46, 0.13), transparent 50%),
+    repeating-linear-gradient(180deg, rgba(0, 0, 0, 0) 0px, rgba(0, 0, 0, 0.04) 2px, rgba(0, 0, 0, 0) 4px),
     var(--charred-oak);
+}
+
+/* Hub landing page — a separate, deliberately light theme */
+body.theme-hub {
+  color: var(--hub-ink);
+  background:
+    radial-gradient(1200px 800px at 15% -10%, rgba(255, 255, 255, 0.9), transparent 55%),
+    radial-gradient(1000px 700px at 100% 10%, rgba(255, 214, 150, 0.35), transparent 55%),
+    linear-gradient(180deg, #fffaf0, #f6ecd6);
 }
 
 * {

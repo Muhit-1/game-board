@@ -19,7 +19,7 @@ function IconAction({ icon, label, onClick }: { icon: ReactNode; label: string; 
         {icon}
       </button>
       <span
-        className="pointer-events-none absolute left-full top-1/2 ml-2.5 -translate-y-1/2 whitespace-nowrap rounded-lg border border-[var(--line)] bg-walnut px-3 py-1.5 text-[11px] font-bold uppercase tracking-[0.05em] text-parchment opacity-0 shadow-deep transition-opacity duration-100 group-hover:opacity-100"
+        className="pointer-events-none absolute left-full top-1/2 ml-2.5 -translate-y-1/2 whitespace-nowrap rounded-lg border border-[var(--line)] bg-walnut px-3 py-1.5 text-[12px] font-bold uppercase tracking-[0.05em] text-parchment opacity-0 shadow-deep transition-opacity duration-100 group-hover:opacity-100"
       >
         {label}
       </span>
@@ -27,7 +27,7 @@ function IconAction({ icon, label, onClick }: { icon: ReactNode; label: string; 
   );
 }
 
-/** Icon-only action rail, docked at the true vertical center of the left edge; labels reveal on hover. */
+/** Icon-only action rail, centered in the space between the other two left-column panels; labels reveal on hover. */
 export function BoardActions({ onShuffle, onNewGame, onOpenSetup }: BoardActionsProps) {
   return (
     <div className="flex flex-col gap-2.5">

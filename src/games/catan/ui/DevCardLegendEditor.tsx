@@ -22,32 +22,32 @@ export function DevCardLegendEditor({ rows, onChange }: DevCardLegendEditorProps
   }
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-2.5">
       {rows.map((row) => (
-        <div key={row.id} className="flex items-center gap-1.5">
+        <div key={row.id} className="flex items-center gap-2">
           <input
             value={row.label}
             onChange={(e) => updateRow(row.id, 'label', e.target.value)}
             placeholder="Card"
-            className="w-[38%] min-w-0 rounded-md border border-[var(--line)] bg-charred-oak px-2 py-1.5 text-[12px] text-parchment placeholder:text-parchment-dim/70 outline-none focus:border-brass"
+            className="w-[38%] min-w-0 rounded-md border border-[var(--line)] bg-charred-oak px-2.5 py-2 text-[13.5px] text-parchment placeholder:text-parchment-dim/70 outline-none focus:border-brass"
           />
           <input
             value={row.meaning}
             onChange={(e) => updateRow(row.id, 'meaning', e.target.value)}
             placeholder="Meaning"
-            className="min-w-0 flex-1 rounded-md border border-[var(--line)] bg-charred-oak px-2 py-1.5 text-[12px] text-parchment placeholder:text-parchment-dim/70 outline-none focus:border-brass"
+            className="min-w-0 flex-1 rounded-md border border-[var(--line)] bg-charred-oak px-2.5 py-2 text-[13.5px] text-parchment placeholder:text-parchment-dim/70 outline-none focus:border-brass"
           />
           <IconButton title="Remove row" variant="danger" onClick={() => removeRow(row.id)}>
-            <Trash2 size={13} />
+            <Trash2 size={15} />
           </IconButton>
         </div>
       ))}
       <button
         type="button"
         onClick={addRow}
-        className="mt-1 flex items-center justify-center gap-1.5 rounded-md border border-dashed border-[var(--line)] py-1.5 text-[11px] font-semibold uppercase tracking-[0.05em] text-brass-soft hover:border-brass hover:text-brass"
+        className="mt-1 flex items-center justify-center gap-1.5 rounded-md border border-dashed border-[var(--line)] py-2 text-[12px] font-semibold uppercase tracking-[0.05em] text-brass-soft hover:border-brass hover:text-brass"
       >
-        <Plus size={13} /> Add row
+        <Plus size={14} /> Add row
       </button>
     </div>
   );

@@ -41,7 +41,7 @@ export function BoardView({ board, players, buildMode, currentPlayerGem, onVerte
   const gemBySlot = useMemo(() => new Map(players.map((p) => [p.slot, p.gem])), [players]);
 
   const viewBox = useMemo(() => {
-    const pad = 55;
+    const pad = 76;
     const xs = board.vertices.map((v) => v.x);
     const ys = board.vertices.map((v) => v.y);
     const minX = Math.min(...xs) - pad;
@@ -49,11 +49,6 @@ export function BoardView({ board, players, buildMode, currentPlayerGem, onVerte
     const minY = Math.min(...ys) - pad;
     const maxY = Math.max(...ys) + pad;
     return `${minX} ${minY} ${maxX - minX} ${maxY - minY}`;
-  }, [board.vertices]);
-
-  const centroid = useMemo(() => {
-    const n = board.vertices.length;
-    return board.vertices.reduce((acc, v) => ({ x: acc.x + v.x / n, y: acc.y + v.y / n }), { x: 0, y: 0 });
   }, [board.vertices]);
 
   const vertexById = useMemo(() => new Map(board.vertices.map((v) => [v.id, v])), [board.vertices]);
@@ -108,14 +103,17 @@ export function BoardView({ board, players, buildMode, currentPlayerGem, onVerte
         const v2 = vertexById.get(edge.v2)!;
         const mx = (v1.x + v2.x) / 2;
         const my = (v1.y + v2.y) / 2;
-        const dist = Math.hypot(mx - centroid.x, my - centroid.y) + 32;
-        const hx = centroid.x + Math.cos(harbor.angle) * dist;
-        const hy = centroid.y + Math.sin(harbor.angle) * dist;
+        // Fixed offset straight out from the coastal edge's own midpoint, along its own outward
+        // normal — not measured from the board centroid, which points the wrong way on this
+        // board's non-convex outline and can land the marker on top of a neighboring hex.
+        const offset = 46;
+        const hx = mx + Math.cos(harbor.angle) * offset;
+        const hy = my + Math.sin(harbor.angle) * offset;
         return (
           <g key={harbor.id}>
             <line x1={hx} y1={hy} x2={v1.x} y2={v1.y} stroke="var(--parchment-dim)" strokeWidth={1.5} strokeDasharray="3 4" opacity={0.6} />
             <line x1={hx} y1={hy} x2={v2.x} y2={v2.y} stroke="var(--parchment-dim)" strokeWidth={1.5} strokeDasharray="3 4" opacity={0.6} />
-            <circle cx={hx} cy={hy} r={15} fill="var(--walnut)" stroke={harborColor(harbor.type)} strokeWidth={2} />
+            <circle cx={hx} cy={hy} r={23} fill="var(--walnut)" stroke={harborColor(harbor.type)} strokeWidth={2.5} />
             <text
               x={hx}
               y={hy}
@@ -123,7 +121,7 @@ export function BoardView({ board, players, buildMode, currentPlayerGem, onVerte
               dominantBaseline="central"
               fontFamily="'JetBrains Mono', monospace"
               fontWeight={700}
-              fontSize={9}
+              fontSize={13}
               fill="var(--parchment)"
             >
               {HARBOR_RATIO[harbor.type]}
@@ -140,15 +138,18 @@ export function BoardView({ board, players, buildMode, currentPlayerGem, onVerte
         return (
           <g key={edge.id}>
             {edge.road && (
-              <line
-                x1={v1.x}
-                y1={v1.y}
-                x2={v2.x}
-                y2={v2.y}
-                stroke={gem ? gem.c2 : 'var(--brass)'}
-                strokeWidth={7}
-                strokeLinecap="round"
-              />
+              <>
+                <line x1={v1.x} y1={v1.y} x2={v2.x} y2={v2.y} stroke="var(--charred-oak)" strokeWidth={11} strokeLinecap="round" />
+                <line
+                  x1={v1.x}
+                  y1={v1.y}
+                  x2={v2.x}
+                  y2={v2.y}
+                  stroke={gem ? gem.c2 : 'var(--brass)'}
+                  strokeWidth={6.5}
+                  strokeLinecap="round"
+                />
+              </>
             )}
             {edgeInteractive && (
               <line
