@@ -1,11 +1,11 @@
 import { Panel } from '../../../shared/components/Panel';
-import { RESOURCE_COLORS } from '../board/resourceColors';
+import { RESOURCE_COLORS_DEEP } from '../board/resourceColors';
 import { Coins, Route, Home, Building2, Layers } from '../../../shared/icons';
 
 interface CostRow {
   label: string;
   icon: JSX.Element;
-  costs: { resource: keyof typeof RESOURCE_COLORS; count: number; label: string }[];
+  costs: { resource: keyof typeof RESOURCE_COLORS_DEEP; count: number; label: string }[];
 }
 
 const COSTS: CostRow[] = [
@@ -46,30 +46,41 @@ const COSTS: CostRow[] = [
   },
 ];
 
+/** The shared inner content, reused by the desktop corner panel and the mobile bottom sheet. */
+export function CostsContent() {
+  return (
+    <div className="flex flex-col gap-3">
+      {COSTS.map((row) => (
+        <div
+          key={row.label}
+          className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2 border-b border-[var(--line)] pb-3 last:border-0 last:pb-0"
+        >
+          <span className="flex items-center gap-2 text-[14.5px] font-semibold text-parchment">
+            <span className="text-brass">{row.icon}</span>
+            {row.label}
+          </span>
+          <span className="flex flex-wrap gap-2">
+            {row.costs.map((c) => (
+              <span
+                key={c.label}
+                title={c.label}
+                className="flex h-8 w-8 items-center justify-center rounded-full font-mono text-[13px] font-bold text-white shadow-[inset_0_1px_2px_rgba(255,255,255,.25),0_2px_4px_rgba(0,0,0,.35)]"
+                style={{ background: RESOURCE_COLORS_DEEP[c.resource] }}
+              >
+                {c.count}
+              </span>
+            ))}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function CostCheatSheet() {
   return (
     <Panel title="Costs" icon={<Coins size={14} />} collapsible={false} width={300}>
-      <div className="flex flex-col gap-2.5">
-        {COSTS.map((row) => (
-          <div
-            key={row.label}
-            className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 border-b border-[var(--line)] pb-2.5 last:border-0 last:pb-0"
-          >
-            <span className="flex items-center gap-2 text-[14.5px] font-semibold text-parchment">
-              <span className="text-brass">{row.icon}</span>
-              {row.label}
-            </span>
-            <span className="flex flex-wrap gap-1.5">
-              {row.costs.map((c) => (
-                <span key={c.label} className="flex items-center gap-1.5 rounded-full border border-[var(--line)] bg-charred-oak/50 px-2 py-1">
-                  <span className="h-3 w-3 rounded-sm" style={{ background: RESOURCE_COLORS[c.resource] }} />
-                  <span className="font-mono text-[13px] font-semibold text-parchment">{c.count}</span>
-                </span>
-              ))}
-            </span>
-          </div>
-        ))}
-      </div>
+      <CostsContent />
     </Panel>
   );
 }

@@ -9,6 +9,20 @@ export const RESOURCE_COLORS: Record<ResourceType, string> = {
   desert: 'var(--res-desert)',
 };
 
+/**
+ * Deeper, more saturated variants of the board's resource colors, used only where a resource
+ * is shown as a small filled chip with white numerals on top (e.g. the cost cheat-sheet) — the
+ * actual hex tiles keep their true, lighter board colors.
+ */
+export const RESOURCE_COLORS_DEEP: Record<ResourceType, string> = {
+  forest: '#2f6b2a',
+  pasture: '#5b8f28',
+  fields: '#b8860f',
+  hills: '#a84a1e',
+  mountains: '#5b6470',
+  desert: '#a68a5c',
+};
+
 export const RESOURCE_LABELS: Record<ResourceType, string> = {
   forest: 'Forest',
   pasture: 'Pasture',

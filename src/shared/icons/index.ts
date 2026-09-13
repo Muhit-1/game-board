@@ -24,4 +24,5 @@ export {
   Check,
   Minus,
   Github,
+  Menu,
 } from 'lucide-react';

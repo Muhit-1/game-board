@@ -8,6 +8,7 @@ import { ScorePanel } from './ui/ScorePanel';
 import { CostCheatSheet } from './ui/CostCheatSheet';
 import { DevCardLegendPanel } from './ui/DevCardLegendPanel';
 import { BoardActions } from './ui/BoardActions';
+import { MobileControls } from './ui/MobileControls';
 import { Toast } from '../../shared/components/Toast';
 import { ConfirmDialog } from '../../shared/components/ConfirmDialog';
 
@@ -101,7 +102,9 @@ export function App() {
         />
       </div>
 
-      <div className="pointer-events-none fixed inset-0 z-10 flex justify-between gap-3 p-4">
+      {/* Desktop: floating corner panels. Hidden below md — there isn't room for two ~280px columns
+          plus the board on a phone screen, so mobile gets its own bottom-nav + sheet UI instead. */}
+      <div className="pointer-events-none fixed inset-0 z-10 hidden justify-between gap-3 p-4 md:flex">
         {/* Left column: its own top/middle/bottom stack, entirely independent of the right column */}
         <div className="flex flex-col items-start justify-between">
           <div className="pointer-events-auto">
@@ -125,6 +128,8 @@ export function App() {
           </div>
         </div>
       </div>
+
+      <MobileControls state={state} dispatch={dispatch} onShuffle={requestShuffle} onNewGame={requestNewGame} onOpenSetup={() => dispatch({ type: 'REOPEN_SETUP' })} />
 
       <Toast message={notice} />
       {confirmState && (
