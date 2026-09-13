@@ -105,25 +105,29 @@ export function App() {
       {/* Desktop: floating corner panels. Hidden below md — there isn't room for two ~280px columns
           plus the board on a phone screen, so mobile gets its own bottom-nav + sheet UI instead. */}
       <div className="pointer-events-none fixed inset-0 z-10 hidden justify-between gap-3 p-4 md:flex">
-        {/* Left column: its own top/middle/bottom stack, entirely independent of the right column */}
-        <div className="flex flex-col items-start justify-between">
-          <div className="pointer-events-auto">
+        {/* Left column: its own top/middle/bottom stack, entirely independent of the right column.
+            overflow-y-auto is a safety net, not the normal case — on a short screen (many laptops
+            are 768–800px tall) three stacked panels can exceed the viewport even though each one
+            individually fits its own size cap; without this, the overflow is simply invisible and
+            unreachable, since the page itself deliberately never scrolls. */}
+        <div className="pointer-events-auto flex flex-col items-start justify-between overflow-y-auto scrollbar-ironwood">
+          <div className="shrink-0">
             <TopLeftWidget state={state} dispatch={dispatch} />
           </div>
-          <div className="pointer-events-auto">
+          <div className="shrink-0">
             <BoardActions onShuffle={requestShuffle} onNewGame={requestNewGame} onOpenSetup={() => dispatch({ type: 'REOPEN_SETUP' })} />
           </div>
-          <div className="pointer-events-auto">
+          <div className="shrink-0">
             <CostCheatSheet />
           </div>
         </div>
 
         {/* Right column: its own top/middle/bottom stack — expanding one never moves the left column */}
-        <div className="flex flex-col items-end justify-between">
-          <div className="pointer-events-auto">
+        <div className="pointer-events-auto flex flex-col items-end justify-between overflow-y-auto scrollbar-ironwood">
+          <div className="shrink-0">
             <ScorePanel state={state} dispatch={dispatch} />
           </div>
-          <div className="pointer-events-auto">
+          <div className="shrink-0">
             <DevCardLegendPanel state={state} dispatch={dispatch} />
           </div>
         </div>
