@@ -8,3 +8,4 @@ dist/
 *.local
 *.tsbuildinfo
 
+CLAUDE.md
