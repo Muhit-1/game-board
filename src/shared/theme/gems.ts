@@ -7,16 +7,18 @@ export interface GemDef {
   c1: string;
   c2: string;
   c3: string;
+  /** A mid-bright tone of the gem, readable as a glow/outline on the dark UI (Onyx's own colour is too dark). */
+  glow: string;
 }
 
 /** The six player identities. Each is a distinct material (gradient + cut), never a flat color swap. */
 export const GEMS: GemDef[] = [
-  { id: 'ruby', label: 'Ruby', cut: 'brilliant', c1: '#ffd7d9', c2: '#e0243f', c3: '#5c0c17' },
-  { id: 'sapphire', label: 'Sapphire', cut: 'brilliant', c1: '#cfe3ff', c2: '#2f5fbf', c3: '#122a5c' },
-  { id: 'amethyst', label: 'Amethyst', cut: 'brilliant', c1: '#ecdcff', c2: '#8a4fd6', c3: '#3a1a5c' },
-  { id: 'onyx', label: 'Onyx', cut: 'cabochon', c1: '#8a8f99', c2: '#3a3d44', c3: '#0c0d10' },
-  { id: 'aquamarine', label: 'Aquamarine', cut: 'emerald', c1: '#d6fff4', c2: '#33b8a3', c3: '#0e4c44' },
-  { id: 'rosequartz', label: 'Rose Quartz', cut: 'cabochon', c1: '#ffe3ee', c2: '#e893b3', c3: '#7a3450' },
+  { id: 'ruby', label: 'Ruby', cut: 'brilliant', c1: '#ffd7d9', c2: '#e0243f', c3: '#5c0c17', glow: '#e0243f' },
+  { id: 'sapphire', label: 'Sapphire', cut: 'brilliant', c1: '#cfe3ff', c2: '#2f5fbf', c3: '#122a5c', glow: '#4a7fe0' },
+  { id: 'amethyst', label: 'Amethyst', cut: 'brilliant', c1: '#ecdcff', c2: '#8a4fd6', c3: '#3a1a5c', glow: '#a066ee' },
+  { id: 'onyx', label: 'Onyx', cut: 'cabochon', c1: '#8a8f99', c2: '#3a3d44', c3: '#0c0d10', glow: '#9aa0ab' },
+  { id: 'aquamarine', label: 'Aquamarine', cut: 'emerald', c1: '#d6fff4', c2: '#33b8a3', c3: '#0e4c44', glow: '#33b8a3' },
+  { id: 'rosequartz', label: 'Rose Quartz', cut: 'cabochon', c1: '#ffe3ee', c2: '#e893b3', c3: '#7a3450', glow: '#e893b3' },
 ];
 
 export function getGem(id: string | null): GemDef | undefined {

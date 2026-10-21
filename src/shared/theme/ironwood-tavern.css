@@ -90,3 +90,55 @@ body.theme-hub {
   background: var(--brass);
   border-radius: 999px;
 }
+
+/* Longest Road / 10-point pop-up and the turn banner */
+@keyframes award-in {
+  0% {
+    opacity: 0;
+    transform: translateY(14px) scale(0.94);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(-2px) scale(1.01);
+  }
+  100% {
+    transform: none;
+  }
+}
+@keyframes award-drain {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
+@keyframes banner-life {
+  0% {
+    opacity: 0;
+    transform: translateY(-16px) scale(0.96);
+  }
+  12% {
+    opacity: 1;
+    transform: none;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+}
+.award-card {
+  animation: award-in 0.45s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+.award-drain {
+  transform-origin: left;
+  animation-name: award-drain;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+.turn-banner {
+  animation: banner-life 1.9s ease both;
+}

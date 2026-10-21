@@ -25,4 +25,12 @@ export {
   Minus,
   Github,
   Menu,
+  GripVertical,
+  Undo2,
+  Volume2,
+  VolumeX,
+  ChevronRight,
+  Swords,
+  BookOpen,
+  Settings,
 } from 'lucide-react';

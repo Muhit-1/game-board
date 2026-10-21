@@ -6,6 +6,9 @@ export type BuildMode = 'settlement' | 'city' | 'road' | 'robber' | 'erase' | nu
 
 export type BuildingType = 'settlement' | 'city';
 
+/** 3–4 players use the standard 19-hex island; 5–6 players use the 30-hex extension board. */
+export type BoardKind = 'standard' | 'extended';
+
 export interface Point {
   x: number;
   y: number;
@@ -56,6 +59,7 @@ export interface Player {
   slot: number;
   /** Auto-assigned by slot order — players don't choose a gem. */
   gem: string;
+  name: string;
 }
 
 export interface DevCardLegendRow {
@@ -69,14 +73,56 @@ export interface ManualScore {
   devCardVictoryPoints: number;
 }
 
-export type Phase = 'setup' | 'playing';
+/**
+ * 'setup' is the names screen; 'arrange' is on the board, where players pick colours and drag themselves into turn order;
+ * 'opening' is the snake-order placement of each player's first two settlements and roads.
+ */
+export type Phase = 'setup' | 'arrange' | 'opening' | 'playing';
+
+export interface OpeningState {
+  /** Slots in placement order: forward through the players, then back (1..N, N..1). */
+  order: number[];
+  index: number;
+  step: 'settlement' | 'road';
+  /** The settlement just placed — the opening road must touch it. */
+  settlementVertexId: number | null;
+}
+
+export interface LongestRoadEvent {
+  /** Monotonic across games so the UI can tell a new event from one it already showed. */
+  id: number;
+  kind: 'gain' | 'steal' | 'lost';
+  slot: number | null;
+  previousSlot: number | null;
+  length: number;
+}
+
+export interface Snapshot {
+  board: Board;
+  phase: Phase;
+  opening: OpeningState | null;
+  round: number;
+  longestRoadHolder: number | null;
+}
 
 export interface GameState {
   phase: Phase;
+  /** Array order is the turn order. */
   players: Player[];
   currentPlayerSlot: number;
+  round: number;
   buildMode: BuildMode;
   board: Board;
+  boardKind: BoardKind;
+  opening: OpeningState | null;
+  /** Which phase the setup screen returns to when it was reopened mid-game. */
+  setupReturn: Exclude<Phase, 'setup'> | null;
   devCardLegend: DevCardLegendRow[];
   manualScores: Record<number, ManualScore>;
+  longestRoadHolder: number | null;
+  lrEvent: LongestRoadEvent | null;
+  eventSeq: number;
+  /** Bumped whenever the turn passes to someone new (drives the banner + sound). */
+  turnCue: number;
+  history: Snapshot[];
 }

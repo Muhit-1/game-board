@@ -5,11 +5,8 @@ export const HEX_SIZE = 60;
 export const HEX_WIDTH = Math.sqrt(3) * HEX_SIZE;
 export const ROW_SPACING_Y = 1.5 * HEX_SIZE;
 
-/** The 5–6 player expansion board: 7 rows, widest in the middle. */
-export const ROW_LAYOUT = [3, 4, 5, 6, 5, 4, 3];
-
-export function hexCenter(row: number, col: number): Point {
-  const count = ROW_LAYOUT[row];
+export function hexCenter(rows: number[], row: number, col: number): Point {
+  const count = rows[row];
   const x = (col - (count - 1) / 2) * HEX_WIDTH;
   const y = row * ROW_SPACING_Y;
   return { x, y };

@@ -1,5 +1,4 @@
 import type { Board, ManualScore } from '../types';
-import { computeLongestRoadHolder } from './longestRoad';
 
 export interface PlayerScoreBreakdown {
   settlements: number;
@@ -14,9 +13,8 @@ export function computeScores(
   board: Board,
   playerSlots: number[],
   manualScores: Record<number, ManualScore>,
+  longestRoadHolder: number | null,
 ): Record<number, PlayerScoreBreakdown> {
-  const longestRoadHolder = computeLongestRoadHolder(board.edges, playerSlots);
-
   const result: Record<number, PlayerScoreBreakdown> = {};
   playerSlots.forEach((slot) => {
     const settlements = board.vertices.filter((v) => v.building?.playerId === slot && v.building.type === 'settlement').length;
@@ -27,7 +25,7 @@ export function computeScores(
 
     result[slot] = {
       settlements,
-      cities: cities * 2,
+      cities,
       longestRoad,
       largestArmy,
       devCardVictoryPoints: manual.devCardVictoryPoints,
