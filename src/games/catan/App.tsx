@@ -16,6 +16,8 @@ import { Toast } from '../../shared/components/Toast';
 import { ConfirmDialog } from '../../shared/components/ConfirmDialog';
 import { getGem } from '../../shared/theme/gems';
 import { isMuted, playSound, setMuted } from '../../shared/sound/sounds';
+import { tableThemeStyle } from '../../shared/theme/tableThemes';
+import { saveLook } from './prefs';
 import { Route, Trophy } from '../../shared/icons';
 
 interface ConfirmState {
@@ -128,6 +130,11 @@ export function App() {
       }
     });
   }, [scores, state.phase]);
+
+  // Remember the look (board style + table colour) across refreshes.
+  useEffect(() => {
+    saveLook({ boardStyle: state.boardStyle, tableTheme: state.tableTheme });
+  }, [state.boardStyle, state.tableTheme]);
 
   // Keyboard shortcuts: tool letters, N = next turn, Z = undo, Esc = put the tool down.
   useEffect(() => {
@@ -317,7 +324,7 @@ export function App() {
   const bannerGem = banner?.gemId ? getGem(banner.gemId) : undefined;
 
   return (
-    <div className="fixed inset-0 overflow-hidden">
+    <div className="fixed inset-0 overflow-hidden" style={tableThemeStyle(state.tableTheme)}>
       {/* Own compositor layer: board repaints don't drag the panels along, and panel hovers don't repaint the board. */}
       <div className="absolute inset-0 transform-gpu">
         <BoardView
@@ -325,6 +332,7 @@ export function App() {
           players={state.players}
           buildMode={state.buildMode}
           currentPlayerGem={currentPlayer?.gem ?? null}
+          style={state.boardStyle}
           legalVertexIds={legal.vertices}
           legalEdgeIds={legal.edges}
           onVertexClick={handleVertexClick}

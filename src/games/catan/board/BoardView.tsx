@@ -1,8 +1,14 @@
 import { memo, useCallback, useMemo, useRef } from 'react';
-import type { Board, BuildMode, Harbor, Hex, HarborType, Player } from '../types';
+import type { Board, BoardStyle, BuildMode, Hex, Player } from '../types';
 import { GEMS, getGem } from '../../../shared/theme/gems';
 import { HEX_SIZE } from './geometry';
 import { RESOURCE_COLORS, HARBOR_RATIO, harborColor } from './resourceColors';
+import { computeViewBox } from './viewBox';
+import { harborGeometry } from './harborGeometry';
+import type { HarborGeometry } from './harborGeometry';
+import { ClassicBase, ClassicBaseDefs } from './classic/ClassicBase';
+import { ClassicCity, ClassicHouse, ClassicPieceDefs, ClassicRoad } from './classic/pieces';
+import { useClassicAssets } from './classic/assets';
 import { Skull } from '../../../shared/icons';
 
 interface BoardViewProps {
@@ -10,6 +16,8 @@ interface BoardViewProps {
   players: Player[];
   buildMode: BuildMode;
   currentPlayerGem: string | null;
+  /** 'tavern' = the original flat board, 'classic' = the illustrated board. Purely visual. */
+  style: BoardStyle;
   /** Spots the current tool can legally act on — only these are marked; the rest still answer a tap with a hint. */
   legalVertexIds: Set<number>;
   legalEdgeIds: Set<number>;
@@ -17,6 +25,17 @@ interface BoardViewProps {
   onEdgeClick: (edgeId: number) => void;
   onHexClick: (hexId: number) => void;
 }
+
+/**
+ * The board's own colours. They are fixed on purpose: the table colour (page background) is chosen independently
+ * and changes the UI variables, so the board must not read those.
+ */
+const INK = '#2b2016';
+const PARCHMENT = '#ede1c8';
+const PARCHMENT_DIM = '#d8cbae';
+const EMBER = '#b5502e';
+const BRASS = '#c9903f';
+const WALNUT = '#3c2a1c';
 
 /** Dots under a number token = how many of the 36 dice combinations roll it (7 is excluded). */
 const PROBABILITY_DOTS: Record<number, number> = { 2: 1, 3: 2, 4: 3, 5: 4, 6: 5, 8: 5, 9: 4, 10: 3, 11: 2, 12: 1 };
@@ -39,16 +58,10 @@ function GemGradientDefs() {
           <stop offset="100%" stopColor={gem.c3} />
         </radialGradient>
       ))}
+      <ClassicBaseDefs />
+      <ClassicPieceDefs />
     </defs>
   );
-}
-
-interface HarborGeometry {
-  id: number;
-  type: HarborType;
-  x: number;
-  y: number;
-  ends: [number, number, number, number];
 }
 
 interface BoardBaseProps {
@@ -59,25 +72,20 @@ interface BoardBaseProps {
   onHexClick: (hexId: number) => void;
 }
 
-/** Hexes, number tokens, harbours and robber. Static between placements, so it's memoised and skipped on most re-renders. */
+/** The original flat board: hexes, number tokens, harbours and robber. Static between placements, so it's memoised. */
 const BoardBase = memo(function BoardBase({ hexes, harbors, robberHexId, hexInteractive, onHexClick }: BoardBaseProps) {
   return (
     <>
       {hexes.map((hex) => {
         const red = hex.number === 6 || hex.number === 8;
-        const tokenColor = red ? 'var(--ember)' : 'var(--charred-oak)';
+        const tokenColor = red ? EMBER : INK;
         const dots = hex.number !== null ? PROBABILITY_DOTS[hex.number] : 0;
         return (
           <g key={hex.id} onClick={() => hexInteractive && onHexClick(hex.id)} style={{ cursor: hexInteractive ? 'crosshair' : 'default' }}>
-            <polygon
-              points={hexPolygonPoints(hex.x, hex.y)}
-              fill={RESOURCE_COLORS[hex.resource]}
-              stroke="var(--charred-oak)"
-              strokeWidth={3}
-            />
+            <polygon points={hexPolygonPoints(hex.x, hex.y)} fill={RESOURCE_COLORS[hex.resource]} stroke={INK} strokeWidth={3} />
             {hex.number !== null && (
               <g>
-                <circle cx={hex.x} cy={hex.y} r={HEX_SIZE * 0.4} fill="var(--parchment)" stroke="rgba(0,0,0,.35)" strokeWidth={1} />
+                <circle cx={hex.x} cy={hex.y} r={HEX_SIZE * 0.4} fill={PARCHMENT} stroke="rgba(0,0,0,.35)" strokeWidth={1} />
                 <text
                   x={hex.x}
                   y={hex.y - 3}
@@ -97,8 +105,8 @@ const BoardBase = memo(function BoardBase({ hexes, harbors, robberHexId, hexInte
             )}
             {robberHexId === hex.id && (
               <g transform={`translate(${hex.x - 14}, ${hex.y - 14})`}>
-                <circle cx={14} cy={14} r={19} fill="var(--charred-oak)" stroke="var(--brass)" strokeWidth={2} />
-                <Skull x={4} y={4} width={20} height={20} color="var(--parchment)" strokeWidth={2} />
+                <circle cx={14} cy={14} r={19} fill={INK} stroke={BRASS} strokeWidth={2} />
+                <Skull x={4} y={4} width={20} height={20} color={PARCHMENT} strokeWidth={2} />
               </g>
             )}
           </g>
@@ -107,9 +115,9 @@ const BoardBase = memo(function BoardBase({ hexes, harbors, robberHexId, hexInte
 
       {harbors.map((harbor) => (
         <g key={harbor.id}>
-          <line x1={harbor.x} y1={harbor.y} x2={harbor.ends[0]} y2={harbor.ends[1]} stroke="var(--parchment-dim)" strokeWidth={1.5} strokeDasharray="3 4" opacity={0.6} />
-          <line x1={harbor.x} y1={harbor.y} x2={harbor.ends[2]} y2={harbor.ends[3]} stroke="var(--parchment-dim)" strokeWidth={1.5} strokeDasharray="3 4" opacity={0.6} />
-          <circle cx={harbor.x} cy={harbor.y} r={23} fill="var(--walnut)" stroke={harborColor(harbor.type)} strokeWidth={2.5} />
+          <line x1={harbor.x} y1={harbor.y} x2={harbor.ends[0]} y2={harbor.ends[1]} stroke={PARCHMENT_DIM} strokeWidth={1.5} strokeDasharray="3 4" opacity={0.6} />
+          <line x1={harbor.x} y1={harbor.y} x2={harbor.ends[2]} y2={harbor.ends[3]} stroke={PARCHMENT_DIM} strokeWidth={1.5} strokeDasharray="3 4" opacity={0.6} />
+          <circle cx={harbor.x} cy={harbor.y} r={23} fill={WALNUT} stroke={harborColor(harbor.type)} strokeWidth={2.5} />
           <text
             x={harbor.x}
             y={harbor.y}
@@ -118,7 +126,7 @@ const BoardBase = memo(function BoardBase({ hexes, harbors, robberHexId, hexInte
             fontFamily="'JetBrains Mono', monospace"
             fontWeight={700}
             fontSize={13}
-            fill="var(--parchment)"
+            fill={PARCHMENT}
           >
             {HARBOR_RATIO[harbor.type]}
           </text>
@@ -128,56 +136,28 @@ const BoardBase = memo(function BoardBase({ hexes, harbors, robberHexId, hexInte
   );
 });
 
-/** Where each harbour marker sits: a fixed offset straight out from its own coastal edge (not from the board centroid, which points the wrong way on this board's non-convex outline). */
-function harborGeometry(board: Board, harbors: Harbor[]): HarborGeometry[] {
-  const offset = 46;
-  return harbors.flatMap((harbor) => {
-    const edge = board.edges.find((e) => e.id === harbor.edgeId);
-    const v1 = edge && board.vertices.find((v) => v.id === edge.v1);
-    const v2 = edge && board.vertices.find((v) => v.id === edge.v2);
-    if (!v1 || !v2) return [];
-    const mx = (v1.x + v2.x) / 2;
-    const my = (v1.y + v2.y) / 2;
-    return [
-      {
-        id: harbor.id,
-        type: harbor.type,
-        x: mx + Math.cos(harbor.angle) * offset,
-        y: my + Math.sin(harbor.angle) * offset,
-        ends: [v1.x, v1.y, v2.x, v2.y] as [number, number, number, number],
-      },
-    ];
-  });
-}
-
 export function BoardView({
   board,
   players,
   buildMode,
   currentPlayerGem,
+  style,
   legalVertexIds,
   legalEdgeIds,
   onVertexClick,
   onEdgeClick,
   onHexClick,
 }: BoardViewProps) {
+  const classic = style === 'classic';
   const gemBySlot = useMemo(() => new Map(players.map((p) => [p.slot, p.gem])), [players]);
-
-  const viewBox = useMemo(() => {
-    const pad = 74;
-    const xs = board.vertices.map((v) => v.x);
-    const ys = board.vertices.map((v) => v.y);
-    const minX = Math.min(...xs) - pad;
-    const maxX = Math.max(...xs) + pad;
-    const minY = Math.min(...ys) - pad;
-    const maxY = Math.max(...ys) + pad;
-    return `${minX} ${minY} ${maxX - minX} ${maxY - minY}`;
-  }, [board.vertices]);
+  const vb = useMemo(() => computeViewBox(board), [board.vertices]);
+  const viewBox = `${vb.x} ${vb.y} ${vb.w} ${vb.h}`;
 
   const vertexById = useMemo(() => new Map(board.vertices.map((v) => [v.id, v])), [board.vertices]);
   const harbors = useMemo(() => harborGeometry(board, board.harbors), [board.harbors, board.hexes]);
+  const classicAssets = useClassicAssets(board, classic);
 
-  // A stable callback keeps BoardBase's memo valid even though the parent re-creates its handlers every render.
+  // A stable callback keeps the memoised base layers valid even though the parent re-creates its handlers every render.
   const hexClickRef = useRef(onHexClick);
   hexClickRef.current = onHexClick;
   const handleHexClick = useCallback((hexId: number) => hexClickRef.current(hexId), []);
@@ -191,7 +171,22 @@ export function BoardView({
     <svg viewBox={viewBox} className="h-full w-full select-none" style={{ touchAction: 'manipulation' }}>
       <GemGradientDefs />
 
-      <BoardBase hexes={board.hexes} harbors={harbors} robberHexId={board.robberHexId} hexInteractive={hexInteractive} onHexClick={handleHexClick} />
+      {classic ? (
+        <ClassicBase
+          hexes={board.hexes}
+          variants={classicAssets.variants}
+          version={classicAssets.version}
+          tileUrl={classicAssets.tileUrl}
+          seaUrl={classicAssets.seaUrl}
+          harbors={harbors}
+          robberHexId={board.robberHexId}
+          vb={vb}
+          hexInteractive={hexInteractive}
+          onHexClick={handleHexClick}
+        />
+      ) : (
+        <BoardBase hexes={board.hexes} harbors={harbors} robberHexId={board.robberHexId} hexInteractive={hexInteractive} onHexClick={handleHexClick} />
+      )}
 
       {/* Roads */}
       {board.edges.map((edge) => {
@@ -201,18 +196,11 @@ export function BoardView({
         const legal = edgeInteractive && legalEdgeIds.has(edge.id);
         return (
           <g key={edge.id}>
-            {edge.road && (
+            {edge.road && classic && gem && <ClassicRoad a={v1} b={v2} gem={gem} />}
+            {edge.road && !classic && (
               <>
-                <line x1={v1.x} y1={v1.y} x2={v2.x} y2={v2.y} stroke="var(--charred-oak)" strokeWidth={11} strokeLinecap="round" />
-                <line
-                  x1={v1.x}
-                  y1={v1.y}
-                  x2={v2.x}
-                  y2={v2.y}
-                  stroke={gem ? gem.c2 : 'var(--brass)'}
-                  strokeWidth={6.5}
-                  strokeLinecap="round"
-                />
+                <line x1={v1.x} y1={v1.y} x2={v2.x} y2={v2.y} stroke={INK} strokeWidth={11} strokeLinecap="round" />
+                <line x1={v1.x} y1={v1.y} x2={v2.x} y2={v2.y} stroke={gem ? gem.c2 : BRASS} strokeWidth={6.5} strokeLinecap="round" />
               </>
             )}
             {legal && (
@@ -221,7 +209,7 @@ export function BoardView({
                 y1={v1.y}
                 x2={v2.x}
                 y2={v2.y}
-                stroke={edge.road ? 'var(--parchment)' : glowColor ?? 'var(--brass-soft)'}
+                stroke={edge.road ? PARCHMENT : glowColor ?? '#e2b876'}
                 strokeWidth={edge.road ? 4 : 8}
                 strokeLinecap="round"
                 opacity={0.75}
@@ -250,7 +238,8 @@ export function BoardView({
         const legal = vertexInteractive && legalVertexIds.has(vertex.id);
         return (
           <g key={vertex.id}>
-            {vertex.building && gem && (
+            {vertex.building && gem && classic && (vertex.building.type === 'settlement' ? <ClassicHouse x={vertex.x} y={vertex.y} gem={gem} /> : <ClassicCity x={vertex.x} y={vertex.y} gem={gem} />)}
+            {vertex.building && gem && !classic && (
               <>
                 {vertex.building.type === 'settlement' ? (
                   <circle cx={vertex.x} cy={vertex.y} r={10} fill={`url(#board-gem-${gem.id})`} stroke="rgba(0,0,0,.4)" strokeWidth={1.5} />
@@ -274,7 +263,7 @@ export function BoardView({
                 cy={vertex.y}
                 r={vertex.building ? 16 : 11}
                 fill={vertex.building ? 'transparent' : 'rgba(237,225,200,.22)'}
-                stroke={glowColor ?? 'var(--brass)'}
+                stroke={glowColor ?? BRASS}
                 strokeWidth={vertex.building ? 2.5 : 2}
                 strokeDasharray={vertex.building ? '3 3' : undefined}
                 pointerEvents="none"

@@ -1,3 +1,5 @@
+import type { TableThemeId } from '../../shared/theme/tableThemes';
+
 export type ResourceType = 'forest' | 'pasture' | 'fields' | 'hills' | 'mountains' | 'desert';
 
 export type HarborType = 'generic' | 'wood' | 'brick' | 'ore' | 'grain' | 'wool';
@@ -5,6 +7,9 @@ export type HarborType = 'generic' | 'wood' | 'brick' | 'ore' | 'grain' | 'wool'
 export type BuildMode = 'settlement' | 'city' | 'road' | 'robber' | 'erase' | null;
 
 export type BuildingType = 'settlement' | 'city';
+
+/** How the board is drawn: the original flat 'Tavern' look, or the illustrated 'Classic' board. Purely visual. */
+export type BoardStyle = 'tavern' | 'classic';
 
 /** 3–4 players use the standard 19-hex island; 5–6 players use the 30-hex extension board. */
 export type BoardKind = 'standard' | 'extended';
@@ -118,6 +123,9 @@ export interface GameState {
   /** Which phase the setup screen returns to when it was reopened mid-game. */
   setupReturn: Exclude<Phase, 'setup'> | null;
   devCardLegend: DevCardLegendRow[];
+  /** Visual preferences — kept across New Game and saved in localStorage. */
+  boardStyle: BoardStyle;
+  tableTheme: TableThemeId;
   manualScores: Record<number, ManualScore>;
   longestRoadHolder: number | null;
   lrEvent: LongestRoadEvent | null;

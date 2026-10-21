@@ -1,6 +1,8 @@
-import type { Board, BoardKind, BuildMode, BuildingType, DevCardLegendRow, GameState, OpeningState, Player, Snapshot } from './types';
+import type { Board, BoardKind, BoardStyle, BuildMode, BuildingType, DevCardLegendRow, GameState, OpeningState, Player, Snapshot } from './types';
 import { generateBoard } from './board/generateBoard';
 import { GEMS } from '../../shared/theme/gems';
+import type { TableThemeId } from '../../shared/theme/tableThemes';
+import { loadLook } from './prefs';
 import { computeLongestRoad } from './scoring/longestRoad';
 import { canPlaceRoad, canPlaceSettlement, canUpgradeToCity } from './rules';
 
@@ -18,6 +20,7 @@ export const MAX_NAME_LENGTH = 14;
 const HISTORY_LIMIT = 100;
 
 export function createInitialState(): GameState {
+  const look = loadLook();
   return {
     phase: 'setup',
     players: [],
@@ -29,6 +32,8 @@ export function createInitialState(): GameState {
     opening: null,
     setupReturn: null,
     devCardLegend: DEFAULT_DEV_CARD_LEGEND,
+    boardStyle: look.boardStyle,
+    tableTheme: look.tableTheme,
     manualScores: {},
     longestRoadHolder: null,
     lrEvent: null,
@@ -41,6 +46,8 @@ export function createInitialState(): GameState {
 export type GameAction =
   | { type: 'START_GAME'; players: Player[]; board: Board; boardKind: BoardKind }
   | { type: 'RESUME_SETUP'; players: Player[] }
+  | { type: 'SET_BOARD_STYLE'; style: BoardStyle }
+  | { type: 'SET_TABLE_THEME'; theme: TableThemeId }
   | { type: 'BEGIN_OPENING' }
   | { type: 'SET_PLAYER_GEM'; slot: number; gem: string }
   | { type: 'SET_BUILD_MODE'; mode: BuildMode }
@@ -185,6 +192,12 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         history: [],
       };
 
+    case 'SET_BOARD_STYLE':
+      return { ...state, boardStyle: action.style };
+
+    case 'SET_TABLE_THEME':
+      return { ...state, tableTheme: action.theme };
+
     case 'BEGIN_OPENING':
       if (state.phase !== 'arrange') return state;
       return startOpening(state, state.board, state.boardKind, state.players);
@@ -325,6 +338,8 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       return {
         ...createInitialState(),
         devCardLegend: state.devCardLegend,
+        boardStyle: state.boardStyle,
+        tableTheme: state.tableTheme,
         eventSeq: state.eventSeq,
         turnCue: state.turnCue,
       };

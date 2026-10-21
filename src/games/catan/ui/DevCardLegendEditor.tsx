@@ -7,10 +7,12 @@ interface DevCardLegendEditorProps {
   onChange: (rows: DevCardLegendRow[]) => void;
   /** Two-line rows (card + delete on top, meaning below) for narrow side panels where side-by-side inputs truncate the text. */
   stacked?: boolean;
+  /** Bigger text and taller inputs, for the full-page setup screen. */
+  large?: boolean;
 }
 
 /** Fully editable table mapping a standard playing-card deck's ranks to a Catan dev-card meaning. */
-export function DevCardLegendEditor({ rows, onChange, stacked = false }: DevCardLegendEditorProps) {
+export function DevCardLegendEditor({ rows, onChange, stacked = false, large = false }: DevCardLegendEditorProps) {
   function updateRow(id: string, field: 'label' | 'meaning', value: string) {
     onChange(rows.map((r) => (r.id === id ? { ...r, [field]: value } : r)));
   }
@@ -53,13 +55,13 @@ export function DevCardLegendEditor({ rows, onChange, stacked = false }: DevCard
             value={row.label}
             onChange={(e) => updateRow(row.id, 'label', e.target.value)}
             placeholder="Card"
-            className="w-[38%] min-w-0 rounded-md border border-[var(--line)] bg-charred-oak px-2.5 py-2 text-[13.5px] text-parchment placeholder:text-parchment-dim/70 outline-none focus:border-brass"
+            className={`w-[38%] min-w-0 rounded-md border border-[var(--line)] bg-charred-oak px-2.5 ${large ? 'py-2.5 text-[16px]' : 'py-2 text-[13.5px]'} text-parchment placeholder:text-parchment-dim/70 outline-none focus:border-brass`}
           />
           <input
             value={row.meaning}
             onChange={(e) => updateRow(row.id, 'meaning', e.target.value)}
             placeholder="Meaning"
-            className="min-w-0 flex-1 rounded-md border border-[var(--line)] bg-charred-oak px-2.5 py-2 text-[13.5px] text-parchment placeholder:text-parchment-dim/70 outline-none focus:border-brass"
+            className={`min-w-0 flex-1 rounded-md border border-[var(--line)] bg-charred-oak px-2.5 ${large ? 'py-2.5 text-[16px]' : 'py-2 text-[13.5px]'} text-parchment placeholder:text-parchment-dim/70 outline-none focus:border-brass`}
           />
           <IconButton title="Remove row" variant="danger" onClick={() => removeRow(row.id)}>
             <Trash2 size={15} />
