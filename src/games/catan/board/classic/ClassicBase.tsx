@@ -132,9 +132,11 @@ export const ClassicBase = memo(function ClassicBase({ hexes, variants, tileUrl,
   const robberHex = hexes.find((h) => h.id === robberHexId);
   return (
     <>
-      <polygon points={frame} fill="rgba(0,0,0,.38)" transform="translate(3 6)" />
+      <polygon points={frame} fill="var(--table-shadow, rgba(0,0,0,.38))" transform="translate(3 6)" />
       <polygon points={frame} fill="#0f86bd" />
       {seaUrl && <image href={seaUrl} x={vb.x} y={vb.y} width={vb.w} height={vb.h} />}
+      {/* Dark rim under the cream bezel keeps the frame readable on light tables */}
+      <polygon points={frame} fill="none" stroke="#6b4a24" strokeWidth={9} strokeLinejoin="round" />
       <polygon points={frame} fill="none" stroke="#f4ebcf" strokeWidth={6} strokeLinejoin="round" />
       <polygon points={frame} fill="none" stroke="rgba(90,60,25,.55)" strokeWidth={1.2} />
 

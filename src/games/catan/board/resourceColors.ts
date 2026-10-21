@@ -23,15 +23,6 @@ export const RESOURCE_COLORS_DEEP: Record<ResourceType, string> = {
   desert: '#a68a5c',
 };
 
-export const RESOURCE_LABELS: Record<ResourceType, string> = {
-  forest: 'Forest',
-  pasture: 'Pasture',
-  fields: 'Fields',
-  hills: 'Hills',
-  mountains: 'Mountains',
-  desert: 'Desert',
-};
-
 export const HARBOR_LABELS: Record<HarborType, string> = {
   generic: '3:1',
   wood: '2:1 Wood',

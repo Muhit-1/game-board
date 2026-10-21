@@ -21,7 +21,7 @@ const NO_SPOTS = new Set<number>();
 const NOOP = () => undefined;
 
 function SectionTitle({ children }: { children: ReactNode }) {
-  return <div className="mb-3.5 text-[15px] font-bold uppercase tracking-[0.08em] text-brass-soft">{children}</div>;
+  return <div className="mb-3.5 text-md font-bold uppercase tracking-caps text-brass-soft">{children}</div>;
 }
 
 /** Names screen. Colours and turn order are chosen next, on the board. Laid out wide so everything fits one screen without scrolling. */
@@ -60,7 +60,7 @@ export function SetupScreen({ state, dispatch }: SetupScreenProps) {
         <Users size={32} className="text-brass" strokeWidth={1.8} />
         <div>
           <h1 className="font-display text-4xl font-semibold leading-tight text-[color:var(--on-table)]">Catan — Setup</h1>
-          <p className="mt-0.5 text-[17px] text-[color:var(--on-table-dim)]">
+          <p className="mt-0.5 text-lead text-[color:var(--on-table-dim)]">
             {isResume ? 'Rename players or edit the dev-card legend.' : 'Pick the player count and type everyone’s name — colours and turn order come next, on the board.'}
           </p>
         </div>
@@ -103,7 +103,7 @@ export function SetupScreen({ state, dispatch }: SetupScreenProps) {
             <div className="flex flex-col gap-3">
               {shownSlots.map((slot) => (
                 <label key={slot} className="flex items-center gap-3">
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[var(--line)] bg-charred-oak text-[14px] font-bold text-parchment-dim">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[var(--line)] bg-charred-oak text-body font-bold text-parchment-dim">
                     {slot + 1}
                   </span>
                   <input
@@ -112,7 +112,7 @@ export function SetupScreen({ state, dispatch }: SetupScreenProps) {
                     maxLength={MAX_NAME_LENGTH}
                     placeholder={`Player ${slot + 1}`}
                     aria-label={`Player ${slot + 1} name`}
-                    className="min-w-0 flex-1 rounded-[10px] border border-[var(--line)] bg-charred-oak px-3.5 py-3 text-[17.5px] font-semibold text-parchment outline-none placeholder:text-parchment-dim/50 focus:border-brass"
+                    className="min-w-0 flex-1 rounded-lg border border-[var(--line)] bg-charred-oak px-3.5 py-3 text-lead font-semibold text-parchment outline-none placeholder:text-parchment-dim/50 focus:border-brass"
                   />
                 </label>
               ))}
@@ -122,7 +122,7 @@ export function SetupScreen({ state, dispatch }: SetupScreenProps) {
 
         <section className={panel}>
           <SectionTitle>Development card legend</SectionTitle>
-          <p className="-mt-1 mb-4 text-[15px] leading-snug text-parchment-dim">Which playing card stands for which dev card — edit it to match your house rules.</p>
+          <p className="-mt-1 mb-4 text-md leading-snug text-parchment-dim">Which playing card stands for which dev card — edit it to match your house rules.</p>
           <div className="min-h-0 flex-1 overflow-y-auto pr-1 scrollbar-ironwood">
             <DevCardLegendEditor large rows={state.devCardLegend} onChange={(rows) => dispatch({ type: 'UPDATE_DEV_CARD_LEGEND', rows })} />
           </div>
@@ -146,7 +146,7 @@ export function SetupScreen({ state, dispatch }: SetupScreenProps) {
                 <h2 className="font-display text-2xl font-semibold text-parchment">
                   {playerCount} players · {boardKind === 'extended' ? '5–6 player extension board' : 'standard board'}
                 </h2>
-                <p className="mt-2 text-[15px] leading-relaxed text-parchment-dim">
+                <p className="mt-2 text-md leading-relaxed text-parchment-dim">
                   {describeBoard(boardKind)} Each player has 5 settlements, 4 cities and 15 roads. First to 10 points wins.
                 </p>
               </div>
@@ -154,7 +154,7 @@ export function SetupScreen({ state, dispatch }: SetupScreenProps) {
                 type="button"
                 onClick={() => setPreviewSeed((s) => s + 1)}
                 title="Shuffle the preview board"
-                className="flex shrink-0 items-center gap-2 rounded-lg border border-[var(--line)] px-3 py-2 text-[13.5px] font-bold uppercase tracking-[0.04em] text-parchment-dim hover:bg-walnut-2"
+                className="flex shrink-0 items-center gap-2 rounded-lg border border-[var(--line)] px-3 py-2 text-small font-bold uppercase tracking-caps text-parchment-dim hover:bg-walnut-2"
               >
                 <Shuffle size={16} className="text-brass" /> Shuffle
               </button>
@@ -162,7 +162,8 @@ export function SetupScreen({ state, dispatch }: SetupScreenProps) {
             <div className="mt-4">
               <BoardStylePicker value={state.boardStyle} onChange={(style) => dispatch({ type: 'SET_BOARD_STYLE', style })} />
             </div>
-            <div className="mt-3 min-h-[300px] flex-1 lg:min-h-0">
+            {/* The table colour sits behind the board, so the preview shows how it will really look. */}
+            <div className="mt-3 min-h-[300px] flex-1 rounded-xl p-3 lg:min-h-0" style={{ background: tableThemeStyle(state.tableTheme).background }}>
               <BoardView
                 board={previewBoard}
                 players={[]}
@@ -177,7 +178,7 @@ export function SetupScreen({ state, dispatch }: SetupScreenProps) {
               />
             </div>
             <div className="mt-4 flex flex-wrap items-center gap-4">
-              <span className="text-[14px] font-bold uppercase tracking-[0.08em] text-brass-soft">Table colour</span>
+              <span className="text-body font-bold uppercase tracking-caps text-brass-soft">Table colour</span>
               <TableColourPicker value={state.tableTheme} onChange={(theme) => dispatch({ type: 'SET_TABLE_THEME', theme })} />
             </div>
           </section>
@@ -189,7 +190,7 @@ export function SetupScreen({ state, dispatch }: SetupScreenProps) {
           <button
             type="button"
             onClick={() => dispatch({ type: 'RESUME_SETUP', players: state.players })}
-            className="rounded-lg border border-[var(--line)] px-6 py-3 text-[16px] font-semibold text-parchment-dim hover:bg-walnut-2"
+            className="rounded-lg border border-[var(--line)] px-6 py-3 text-md font-semibold text-parchment-dim hover:bg-walnut-2"
           >
             Cancel
           </button>
@@ -197,7 +198,7 @@ export function SetupScreen({ state, dispatch }: SetupScreenProps) {
         <button
           type="button"
           onClick={handleStart}
-          className="rounded-lg border border-brass bg-brass px-10 py-3.5 text-[16px] font-bold uppercase tracking-[0.05em] text-charred-oak hover:bg-brass-soft"
+          className="rounded-lg border border-brass bg-brass px-10 py-3.5 text-md font-bold uppercase tracking-caps text-charred-oak hover:bg-brass-soft"
         >
           {isResume ? 'Save & Resume' : 'Start Game'}
         </button>

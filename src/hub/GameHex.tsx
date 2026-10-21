@@ -70,7 +70,7 @@ export function GameHex({ game }: { game: GameEntry }) {
 
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 px-8 text-center opacity-0 transition-opacity duration-200 group-hover:opacity-100">
         <div className="font-display text-2xl font-semibold text-white [text-shadow:0_2px_10px_rgba(90,40,0,.55)]">{game.title}</div>
-        <p className="text-[12.5px] leading-snug text-white/95 [text-shadow:0_1px_6px_rgba(90,40,0,.5)]">{game.description}</p>
+        <p className="text-label leading-snug text-white/95 [text-shadow:0_1px_6px_rgba(90,40,0,.5)]">{game.description}</p>
       </div>
     </a>
   );

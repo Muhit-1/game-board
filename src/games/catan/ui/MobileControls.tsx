@@ -37,7 +37,7 @@ function MenuButton({ icon, label, onClick, disabled = false }: { icon: ReactNod
       type="button"
       disabled={disabled}
       onClick={onClick}
-      className="flex w-full items-center gap-3 rounded-xl border border-[var(--line)] bg-charred-oak/40 px-4 py-3.5 text-left text-[15px] font-semibold text-parchment hover:bg-walnut-2 disabled:opacity-40"
+      className="flex w-full items-center gap-3 rounded-xl border border-[var(--line)] bg-charred-oak/40 px-4 py-3.5 text-left text-md font-semibold text-parchment hover:bg-walnut-2 disabled:opacity-40"
     >
       <span className="text-brass">{icon}</span>
       {label}
@@ -73,8 +73,8 @@ export function MobileControls({ state, dispatch, scores, muted, onToggleSound, 
           {arranging && (
             <>
               <div className="min-w-0 rounded-full border border-brass bg-walnut-2 px-3.5 py-1.5 leading-tight">
-                <div className="text-[9.5px] font-bold uppercase tracking-[0.1em] text-brass-soft">Before we start</div>
-                <div className="truncate text-[14px] font-bold text-parchment">Organize your players</div>
+                <div className="text-micro font-bold uppercase tracking-kicker text-brass-soft">Before we start</div>
+                <div className="truncate text-body font-bold text-parchment">Organize your players</div>
               </div>
               <button
                 type="button"
@@ -82,7 +82,7 @@ export function MobileControls({ state, dispatch, scores, muted, onToggleSound, 
                   setOpen(null);
                   dispatch({ type: 'BEGIN_OPENING' });
                 }}
-                className="flex shrink-0 items-center gap-1 rounded-full border border-brass bg-brass px-3.5 py-2 text-[12px] font-bold uppercase tracking-[0.04em] text-charred-oak"
+                className="flex shrink-0 items-center gap-1 rounded-full border border-brass bg-brass px-3.5 py-2 text-label font-bold uppercase tracking-caps text-charred-oak"
               >
                 Start <ChevronRight size={14} strokeWidth={2.4} />
               </button>
@@ -92,10 +92,10 @@ export function MobileControls({ state, dispatch, scores, muted, onToggleSound, 
             <div className="flex min-w-0 items-center gap-2 rounded-full border bg-walnut-2 py-1 pl-1.5 pr-3.5" style={{ borderColor: currentGem.glow }}>
               <GemIcon gem={currentGem} size={24} />
               <div className="min-w-0 leading-tight">
-                <div className="text-[9.5px] font-bold uppercase tracking-[0.1em] text-brass-soft">
+                <div className="text-micro font-bold uppercase tracking-kicker text-brass-soft">
                   {opening ? (opening.step === 'settlement' ? 'Place settlement' : 'Now a road') : `Round ${state.round}`}
                 </div>
-                <div className="truncate text-[14px] font-bold text-parchment">{current.name}</div>
+                <div className="truncate text-body font-bold text-parchment">{current.name}</div>
               </div>
             </div>
           )}
@@ -103,7 +103,7 @@ export function MobileControls({ state, dispatch, scores, muted, onToggleSound, 
             <button
               type="button"
               onClick={() => dispatch({ type: 'NEXT_TURN' })}
-              className="flex items-center gap-1 rounded-full border border-brass bg-brass px-3.5 py-2 text-[12px] font-bold uppercase tracking-[0.04em] text-charred-oak"
+              className="flex items-center gap-1 rounded-full border border-brass bg-brass px-3.5 py-2 text-label font-bold uppercase tracking-caps text-charred-oak"
             >
               Next turn <ChevronRight size={14} strokeWidth={2.4} />
             </button>
@@ -118,7 +118,7 @@ export function MobileControls({ state, dispatch, scores, muted, onToggleSound, 
                 key={p.slot}
                 type="button"
                 onClick={() => dispatch({ type: 'SET_CURRENT_PLAYER', slot: p.slot })}
-                className={`flex shrink-0 items-center gap-1.5 rounded-full border py-1 pl-1 pr-2.5 text-[13px] font-bold ${active ? 'bg-walnut-2' : 'border-[var(--line)] bg-walnut'}`}
+                className={`flex shrink-0 items-center gap-1.5 rounded-full border py-1 pl-1 pr-2.5 text-small font-bold ${active ? 'bg-walnut-2' : 'border-[var(--line)] bg-walnut'}`}
                 style={active ? { borderColor: gem.glow } : undefined}
               >
                 <GemIcon gem={gem} size={22} />
@@ -140,7 +140,7 @@ export function MobileControls({ state, dispatch, scores, muted, onToggleSound, 
                   key={t.key}
                   type="button"
                   onClick={() => setOpen(t.key)}
-                  className={`flex-1 rounded-lg border py-2 text-[11.5px] font-bold ${open === t.key ? 'border-brass bg-walnut-2 text-parchment' : 'border-[var(--line)] text-parchment-dim'}`}
+                  className={`flex-1 rounded-lg border py-2 text-label font-bold ${open === t.key ? 'border-brass bg-walnut-2 text-parchment' : 'border-[var(--line)] text-parchment-dim'}`}
                 >
                   {t.label}
                 </button>
@@ -153,7 +153,7 @@ export function MobileControls({ state, dispatch, scores, muted, onToggleSound, 
             {open === 'players' && (
               <>
                 <PlayerList state={state} dispatch={dispatch} scores={scores} variant="sheet" />
-                <p className="text-[12px] text-parchment-dim">
+                <p className="text-label text-parchment-dim">
                   {arranging
                     ? 'Drag the handle to set turn order (first plays first) and tap a colour for each player. Then press Start.'
                     : 'Drag the handle to change turn order. Double-tap a name to rename.'}
@@ -183,7 +183,7 @@ export function MobileControls({ state, dispatch, scores, muted, onToggleSound, 
               type="button"
               disabled={locked}
               onClick={() => dispatch({ type: 'SET_BUILD_MODE', mode: active ? null : tool.mode })}
-              className={`my-1 flex flex-1 flex-col items-center justify-center gap-1 rounded-xl border text-[9.5px] font-bold uppercase tracking-wide transition-colors ${
+              className={`my-1 flex flex-1 flex-col items-center justify-center gap-1 rounded-xl border text-micro font-bold uppercase tracking-wide transition-colors ${
                 active ? 'border-brass bg-walnut-2 text-parchment' : 'border-transparent text-parchment-dim'
               } ${locked && !active ? 'opacity-40' : ''}`}
             >
@@ -195,7 +195,7 @@ export function MobileControls({ state, dispatch, scores, muted, onToggleSound, 
         <button
           type="button"
           onClick={() => setOpen((o) => (o ? null : 'players'))}
-          className={`my-1 flex flex-1 flex-col items-center justify-center gap-1 rounded-xl border text-[9.5px] font-bold uppercase tracking-wide ${
+          className={`my-1 flex flex-1 flex-col items-center justify-center gap-1 rounded-xl border text-micro font-bold uppercase tracking-wide ${
             open ? 'border-brass bg-walnut-2 text-parchment' : 'border-transparent text-parchment-dim'
           }`}
         >

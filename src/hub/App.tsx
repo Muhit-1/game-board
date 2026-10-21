@@ -26,7 +26,7 @@ export function App() {
 
       <a
         href={GITHUB_URL}
-        className="fixed bottom-5 right-5 flex items-center gap-2 rounded-full border border-[var(--hub-line)] bg-white/70 px-4 py-2.5 text-[12px] font-semibold text-[var(--hub-ink-dim)] shadow-[0_10px_24px_rgba(74,53,32,.12)] backdrop-blur-sm transition-colors hover:bg-white hover:text-[var(--hub-ink)]"
+        className="fixed bottom-5 right-5 flex items-center gap-2 rounded-full border border-[var(--hub-line)] bg-white/70 px-4 py-2.5 text-label font-semibold text-[var(--hub-ink-dim)] shadow-[0_10px_24px_rgba(74,53,32,.12)] backdrop-blur-sm transition-colors hover:bg-white hover:text-[var(--hub-ink)]"
       >
         <Github size={16} strokeWidth={1.8} />
         GitHub Source

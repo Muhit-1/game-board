@@ -1,6 +1,6 @@
 import { memo, useCallback, useMemo, useRef } from 'react';
 import type { Board, BoardStyle, BuildMode, Hex, Player } from '../types';
-import { GEMS, getGem } from '../../../shared/theme/gems';
+import { getGem } from '../../../shared/theme/gems';
 import { HEX_SIZE } from './geometry';
 import { RESOURCE_COLORS, HARBOR_RATIO, harborColor } from './resourceColors';
 import { computeViewBox } from './viewBox';
@@ -28,11 +28,11 @@ interface BoardViewProps {
 
 /**
  * The board's own colours. They are fixed on purpose: the table colour (page background) is chosen independently
- * and changes the UI variables, so the board must not read those.
+ * and changes the UI variables, so the board must not read those. The one exception is the dashed harbour lines,
+ * which sit on the table itself and so follow `--on-table-dim` to stay visible on every table colour.
  */
 const INK = '#2b2016';
 const PARCHMENT = '#ede1c8';
-const PARCHMENT_DIM = '#d8cbae';
 const EMBER = '#b5502e';
 const BRASS = '#c9903f';
 const WALNUT = '#3c2a1c';
@@ -47,17 +47,10 @@ function hexPolygonPoints(cx: number, cy: number): string {
   }).join(' ');
 }
 
-/** Radial gradients for every gem, defined once and referenced by id everywhere on the board. */
-function GemGradientDefs() {
+/** Gradients for the tokens, the robber pawn and the painted pieces (shared by both board styles). */
+function BoardDefs() {
   return (
     <defs>
-      {GEMS.map((gem) => (
-        <radialGradient key={gem.id} id={`board-gem-${gem.id}`} cx="35%" cy="30%" r="75%">
-          <stop offset="0%" stopColor={gem.c1} />
-          <stop offset="55%" stopColor={gem.c2} />
-          <stop offset="100%" stopColor={gem.c3} />
-        </radialGradient>
-      ))}
       <ClassicBaseDefs />
       <ClassicPieceDefs />
     </defs>
@@ -115,8 +108,8 @@ const BoardBase = memo(function BoardBase({ hexes, harbors, robberHexId, hexInte
 
       {harbors.map((harbor) => (
         <g key={harbor.id}>
-          <line x1={harbor.x} y1={harbor.y} x2={harbor.ends[0]} y2={harbor.ends[1]} stroke={PARCHMENT_DIM} strokeWidth={1.5} strokeDasharray="3 4" opacity={0.6} />
-          <line x1={harbor.x} y1={harbor.y} x2={harbor.ends[2]} y2={harbor.ends[3]} stroke={PARCHMENT_DIM} strokeWidth={1.5} strokeDasharray="3 4" opacity={0.6} />
+          <line x1={harbor.x} y1={harbor.y} x2={harbor.ends[0]} y2={harbor.ends[1]} stroke="var(--on-table-dim, #d8cbae)" strokeWidth={1.8} strokeDasharray="3 4" opacity={0.85} />
+          <line x1={harbor.x} y1={harbor.y} x2={harbor.ends[2]} y2={harbor.ends[3]} stroke="var(--on-table-dim, #d8cbae)" strokeWidth={1.8} strokeDasharray="3 4" opacity={0.85} />
           <circle cx={harbor.x} cy={harbor.y} r={23} fill={WALNUT} stroke={harborColor(harbor.type)} strokeWidth={2.5} />
           <text
             x={harbor.x}
@@ -169,7 +162,7 @@ export function BoardView({
 
   return (
     <svg viewBox={viewBox} className="h-full w-full select-none" style={{ touchAction: 'manipulation' }}>
-      <GemGradientDefs />
+      <BoardDefs />
 
       {classic ? (
         <ClassicBase
@@ -196,13 +189,7 @@ export function BoardView({
         const legal = edgeInteractive && legalEdgeIds.has(edge.id);
         return (
           <g key={edge.id}>
-            {edge.road && classic && gem && <ClassicRoad a={v1} b={v2} gem={gem} />}
-            {edge.road && !classic && (
-              <>
-                <line x1={v1.x} y1={v1.y} x2={v2.x} y2={v2.y} stroke={INK} strokeWidth={11} strokeLinecap="round" />
-                <line x1={v1.x} y1={v1.y} x2={v2.x} y2={v2.y} stroke={gem ? gem.c2 : BRASS} strokeWidth={6.5} strokeLinecap="round" />
-              </>
-            )}
+            {edge.road && gem && <ClassicRoad a={v1} b={v2} gem={gem} />}
             {legal && (
               <line
                 x1={v1.x}
@@ -238,25 +225,7 @@ export function BoardView({
         const legal = vertexInteractive && legalVertexIds.has(vertex.id);
         return (
           <g key={vertex.id}>
-            {vertex.building && gem && classic && (vertex.building.type === 'settlement' ? <ClassicHouse x={vertex.x} y={vertex.y} gem={gem} /> : <ClassicCity x={vertex.x} y={vertex.y} gem={gem} />)}
-            {vertex.building && gem && !classic && (
-              <>
-                {vertex.building.type === 'settlement' ? (
-                  <circle cx={vertex.x} cy={vertex.y} r={10} fill={`url(#board-gem-${gem.id})`} stroke="rgba(0,0,0,.4)" strokeWidth={1.5} />
-                ) : (
-                  <rect
-                    x={vertex.x - 12}
-                    y={vertex.y - 12}
-                    width={24}
-                    height={24}
-                    rx={5}
-                    fill={`url(#board-gem-${gem.id})`}
-                    stroke="rgba(0,0,0,.4)"
-                    strokeWidth={1.5}
-                  />
-                )}
-              </>
-            )}
+            {vertex.building && gem && (vertex.building.type === 'settlement' ? <ClassicHouse x={vertex.x} y={vertex.y} gem={gem} /> : <ClassicCity x={vertex.x} y={vertex.y} gem={gem} />)}
             {legal && (
               <circle
                 cx={vertex.x}

@@ -46,6 +46,45 @@ function hexToHsl(hex: string): { h: number; s: number; l: number } {
   return { h, s, l };
 }
 
+function luminance(hex: string): number {
+  const n = parseInt(hex.slice(1), 16);
+  const channel = (v: number) => {
+    const c = v / 255;
+    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+  };
+  return 0.2126 * channel((n >> 16) & 255) + 0.7152 * channel((n >> 8) & 255) + 0.0722 * channel(n & 255);
+}
+
+function contrast(a: string, b: string): number {
+  const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+  return (hi + 0.05) / (lo + 0.05);
+}
+
+/** Mix a hex colour toward white by `amount` (0..1) — approximates the lighter end of the table gradient. */
+function lighten(hex: string, amount: number): string {
+  const n = parseInt(hex.slice(1), 16);
+  const mix = (v: number) => Math.round(v + (255 - v) * amount);
+  return `#${[(n >> 16) & 255, (n >> 8) & 255, n & 255].map((v) => mix(v).toString(16).padStart(2, '0')).join('')}`;
+}
+
+/** Text that sits directly on the table: whichever of a dark or light ink reads better across the gradient. */
+function inkFor(hex: string): { ink: string; dim: string } {
+  const dark = { ink: '#2b1c10', dim: '#3f2c1b' };
+  const light = { ink: '#f6ecd6', dim: '#eadfc4' };
+  const worst = (ink: string) => Math.min(contrast(ink, hex), contrast(ink, lighten(hex, 0.12)));
+  return worst(dark.dim) >= worst(light.dim) ? dark : light;
+}
+
+/** `R G B` channel triplet for an hsl colour, as the Tailwind colour variables expect. */
+function hslChannels(h: number, s: number, l: number): string {
+  const a = s * Math.min(l, 1 - l);
+  const f = (n: number) => {
+    const k = (n + h / 30) % 12;
+    return Math.round((l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1))) * 255);
+  };
+  return `${f(0)} ${f(8)} ${f(4)}`;
+}
+
 const hsl = (h: number, s: number, l: number) => `hsl(${h.toFixed(0)} ${(s * 100).toFixed(0)}% ${(l * 100).toFixed(0)}%)`;
 
 /** The original tavern look: warm radial glows over charred oak. */
@@ -66,13 +105,18 @@ export function tableThemeStyle(id: TableThemeId): CSSProperties {
   const dark = c.l < 0.3;
   const panel = dark ? 0.27 : 0.17;
   const s = Math.min(c.s, 0.5);
-  const lightTable = c.l > 0.5;
+  const text = inkFor(theme.hex);
+  // Shadows take the wood's own hue (very dark, same saturation) instead of neutral black, so they blend with the table.
+  const shadow = (alpha: number) => `hsl(${c.h.toFixed(0)} ${(s * 100).toFixed(0)}% 6% / ${alpha})`;
   return {
     background: `linear-gradient(135deg, ${hsl(c.h, c.s, Math.min(c.l + 0.08, 0.93))}, ${theme.hex} 50%, ${hsl(c.h, c.s, Math.max(c.l - 0.11, 0.05))})`,
-    ['--walnut' as string]: hsl(c.h, s, panel),
-    ['--walnut-2' as string]: hsl(c.h, s, panel + 0.06),
-    ['--charred-oak' as string]: hsl(c.h, s, Math.max(panel - 0.07, 0.06)),
-    ['--on-table' as string]: lightTable ? '#2b1c10' : '#ede1c8',
-    ['--on-table-dim' as string]: lightTable ? '#5b4430' : '#d8cbae',
+    ['--walnut-rgb' as string]: hslChannels(c.h, s, panel),
+    ['--walnut-2-rgb' as string]: hslChannels(c.h, s, panel + 0.06),
+    ['--charred-oak-rgb' as string]: hslChannels(c.h, s, Math.max(panel - 0.07, 0.06)),
+    ['--shadow-card' as string]: `0 8px 20px ${shadow(0.35)}`,
+    ['--shadow-deep' as string]: `0 24px 60px ${shadow(0.5)}`,
+    ['--table-shadow' as string]: shadow(0.4),
+    ['--on-table' as string]: text.ink,
+    ['--on-table-dim' as string]: text.dim,
   };
 }

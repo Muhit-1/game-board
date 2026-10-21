@@ -80,8 +80,8 @@ export function BoardStylePicker({ value, onChange }: { value: BoardStyle; onCha
               <StyleThumb style={s.value} />
             </span>
             <span className="min-w-0">
-              <span className="block text-[16px] font-bold text-parchment">{s.name}</span>
-              <span className="block text-[12.5px] leading-snug text-parchment-dim">{s.note}</span>
+              <span className="block text-md font-bold text-parchment">{s.name}</span>
+              <span className="block text-label leading-snug text-parchment-dim">{s.note}</span>
             </span>
           </button>
         );

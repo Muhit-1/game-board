@@ -23,7 +23,7 @@ export const TOOLS: ToolDef[] = [
 export function ToolsPanel({ state, dispatch }: { state: GameState; dispatch: Dispatch<GameAction> }) {
   const locked = state.phase !== 'playing';
   return (
-    <div className="rounded-[15px] border border-[var(--line)] bg-walnut p-1.5 shadow-deep">
+    <div className="rounded-2xl border border-[var(--line)] bg-walnut p-1.5 shadow-deep">
       {TOOLS.map((tool) => {
         const active = state.buildMode === tool.mode;
         return (
@@ -33,14 +33,14 @@ export function ToolsPanel({ state, dispatch }: { state: GameState; dispatch: Di
             disabled={locked}
             onClick={() => dispatch({ type: 'SET_BUILD_MODE', mode: active ? null : tool.mode })}
             className={[
-              'flex h-[42px] w-full items-center gap-3 rounded-[10px] border px-3 text-[12px] font-bold uppercase tracking-[0.04em] transition-colors',
+              'flex h-[42px] w-full items-center gap-3 rounded-lg border px-3 text-label font-bold uppercase tracking-caps transition-colors',
               active ? 'border-brass bg-walnut-2 text-parchment ring-1 ring-brass/40' : 'border-transparent text-parchment-dim hover:bg-walnut-2',
               locked && !active ? 'opacity-40' : '',
             ].join(' ')}
           >
             <span className={active ? 'text-brass-soft' : 'text-brass'}>{tool.icon}</span>
             {tool.label}
-            <kbd className="ml-auto font-mono text-[10px] font-bold text-parchment-dim/60">{tool.key}</kbd>
+            <kbd className="ml-auto font-mono text-micro font-bold text-parchment-dim/80">{tool.key}</kbd>
           </button>
         );
       })}
@@ -49,13 +49,13 @@ export function ToolsPanel({ state, dispatch }: { state: GameState; dispatch: Di
         type="button"
         disabled={state.history.length === 0}
         onClick={() => dispatch({ type: 'UNDO' })}
-        className="flex h-[42px] w-full items-center gap-3 rounded-[10px] border border-transparent px-3 text-[12px] font-bold uppercase tracking-[0.04em] text-parchment-dim transition-colors hover:bg-walnut-2 disabled:opacity-40 disabled:hover:bg-transparent"
+        className="flex h-[42px] w-full items-center gap-3 rounded-lg border border-transparent px-3 text-label font-bold uppercase tracking-caps text-parchment-dim transition-colors hover:bg-walnut-2 disabled:opacity-40 disabled:hover:bg-transparent"
       >
         <span className="text-brass">
           <Undo2 size={17} strokeWidth={1.8} />
         </span>
         Undo
-        <kbd className="ml-auto font-mono text-[10px] font-bold text-parchment-dim/60">Z</kbd>
+        <kbd className="ml-auto font-mono text-micro font-bold text-parchment-dim/80">Z</kbd>
       </button>
     </div>
   );

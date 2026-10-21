@@ -1,16 +1,25 @@
-/* Ironwood Tavern Board — theme tokens (see /theme-ironwood-tavern.html for the reference sheet) */
+/* Ironwood Tavern — the default theme tokens. Table colours override the panel/shadow variables at runtime (tableThemes.ts). */
 :root {
-  --charred-oak: #2b2016;
-  --walnut: #3c2a1c;
-  --walnut-2: #4a3423;
-  --brass: #c9903f;
-  --brass-soft: #e2b876;
-  --parchment: #ede1c8;
-  --parchment-dim: #d8cbae;
-  --ember: #b5502e;
-  --moss: #6f8a5c;
+  /* Colours as R G B triplets (Tailwind builds opacity variants from these). The first three are overridden per table colour. */
+  --charred-oak-rgb: 43 32 22;
+  --walnut-rgb: 60 42 28;
+  --walnut-2-rgb: 74 52 35;
+  --brass-rgb: 201 144 63;
+  --brass-soft-rgb: 226 184 118;
+  --parchment-rgb: 237 225 200;
+  --parchment-dim-rgb: 216 203 174;
+  --ember-rgb: 181 80 46;
+  /* Colours that never change with the table colour, for plain CSS / SVG use */
+  --brass: rgb(var(--brass-rgb));
+  --brass-soft: rgb(var(--brass-soft-rgb));
+  --parchment: rgb(var(--parchment-rgb));
+  --parchment-dim: rgb(var(--parchment-dim-rgb));
+  --ember: rgb(var(--ember-rgb));
   --line: rgba(237, 225, 200, 0.14);
+  /* Shadows are variables so each table colour can tint them (see tableThemes.ts). */
+  --shadow-card: 0 8px 20px rgba(0, 0, 0, 0.35);
   --shadow-deep: 0 24px 60px rgba(0, 0, 0, 0.55);
+  --table-shadow: rgba(0, 0, 0, 0.38);
 
   /* resource colors */
   --res-forest: #3f7d3a;
@@ -24,11 +33,6 @@
   --hub-ink: #4a3520;
   --hub-ink-dim: #8a7758;
   --hub-line: rgba(74, 53, 32, 0.12);
-}
-
-@font-face {
-  font-family: 'Fraunces';
-  src: local('Fraunces');
 }
 
 html,
@@ -46,16 +50,12 @@ body {
 
 /* Catan board page — the dark tavern chrome, scoped so it never leaks onto the hub */
 body.theme-tavern {
-  background: var(--charred-oak);
   color: var(--parchment);
-}
-
-body.theme-tavern {
   background:
     radial-gradient(1100px 700px at 12% -10%, rgba(201, 144, 63, 0.17), transparent 55%),
     radial-gradient(900px 600px at 100% 10%, rgba(181, 80, 46, 0.13), transparent 50%),
     repeating-linear-gradient(180deg, rgba(0, 0, 0, 0) 0px, rgba(0, 0, 0, 0.04) 2px, rgba(0, 0, 0, 0) 4px),
-    var(--charred-oak);
+    rgb(var(--charred-oak-rgb));
 }
 
 /* Hub landing page — a separate, deliberately light theme */
@@ -73,18 +73,18 @@ body.theme-hub {
 
 ::selection {
   background: var(--brass);
-  color: var(--charred-oak);
+  color: rgb(var(--charred-oak-rgb));
 }
 
 .scrollbar-ironwood {
   scrollbar-width: thin;
-  scrollbar-color: var(--brass) var(--walnut);
+  scrollbar-color: var(--brass) rgb(var(--walnut-rgb));
 }
 .scrollbar-ironwood::-webkit-scrollbar {
   width: 8px;
 }
 .scrollbar-ironwood::-webkit-scrollbar-track {
-  background: var(--walnut);
+  background: rgb(var(--walnut-rgb));
 }
 .scrollbar-ironwood::-webkit-scrollbar-thumb {
   background: var(--brass);

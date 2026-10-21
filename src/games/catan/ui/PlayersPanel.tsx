@@ -22,7 +22,7 @@ const POPOVER_CLOSE_DELAY_MS = 90;
 
 function LogLine({ label, value, dim = false }: { label: string; value: string; dim?: boolean }) {
   return (
-    <div className={`flex justify-between gap-3 border-b border-dashed border-[var(--line)] py-1 text-[13px] ${dim ? 'text-parchment-dim/55' : 'text-parchment-dim'}`}>
+    <div className={`flex justify-between gap-3 border-b border-dashed border-[var(--line)] py-1 text-small ${dim ? 'text-parchment-dim/55' : 'text-parchment-dim'}`}>
       <span>{label}</span>
       <span className={`font-mono font-bold ${dim ? 'text-parchment-dim/55' : 'text-parchment'}`}>{value}</span>
     </div>
@@ -49,27 +49,27 @@ function PointsLog({
       <LogLine label="Longest Road" value={score.longestRoad ? '+2' : '—'} dim={!score.longestRoad} />
       <LogLine label="Largest Army" value={score.largestArmy ? '+2' : '—'} dim={!score.largestArmy} />
       <LogLine label="Dev-card VP" value={score.devCardVictoryPoints ? `+${score.devCardVictoryPoints}` : '—'} dim={!score.devCardVictoryPoints} />
-      <div className="flex justify-between pt-2 text-[13.5px] font-bold text-parchment">
+      <div className="flex justify-between pt-2 text-small font-bold text-parchment">
         <span>Total</span>
-        <span className="font-mono text-[16px] text-brass-soft">{score.total}</span>
+        <span className="font-mono text-md text-brass-soft">{score.total}</span>
       </div>
       <div className="mt-2.5 flex items-center justify-between gap-2 border-t border-[var(--line)] pt-2.5">
         <button
           type="button"
           onClick={() => dispatch({ type: 'SET_LARGEST_ARMY', slot: manual?.hasLargestArmy ? null : slot })}
           className={[
-            'flex items-center gap-1 rounded-md border px-2 py-1 text-[10.5px] font-bold uppercase tracking-[0.04em]',
+            'flex items-center gap-1 rounded-md border px-2 py-1 text-micro font-bold uppercase tracking-caps',
             manual?.hasLargestArmy ? 'border-brass bg-brass/10 text-brass-soft' : 'border-[var(--line)] text-parchment-dim hover:bg-walnut-2',
           ].join(' ')}
         >
           <Swords size={11} /> Largest army
         </button>
         <div className="flex items-center gap-1.5">
-          <span className="text-[10.5px] font-bold uppercase tracking-[0.04em] text-parchment-dim">VP</span>
+          <span className="text-micro font-bold uppercase tracking-caps text-parchment-dim">VP</span>
           <button type="button" aria-label="Remove a dev-card victory point" onClick={() => dispatch({ type: 'ADJUST_DEV_VP', slot, delta: -1 })} className={stepper}>
             <Minus size={12} />
           </button>
-          <span className="w-4 text-center font-mono text-[13px] font-bold text-parchment">{score.devCardVictoryPoints}</span>
+          <span className="w-4 text-center font-mono text-small font-bold text-parchment">{score.devCardVictoryPoints}</span>
           <button type="button" aria-label="Add a dev-card victory point" onClick={() => dispatch({ type: 'ADJUST_DEV_VP', slot, delta: 1 })} className={stepper}>
             <Plus size={12} />
           </button>
@@ -129,7 +129,7 @@ function PlayerCard(props: PlayerCardProps) {
         if (elRef.current && !arranging && variant === 'floating') props.onHoverStart(elRef.current);
       }}
       className={[
-        'relative mb-2 rounded-xl border bg-walnut px-2 py-2 shadow-[0_8px_20px_rgba(0,0,0,.35)]',
+        'relative mb-2 rounded-xl border bg-walnut px-2 py-2 shadow-card',
         arranging ? '' : 'cursor-pointer',
         active && !arranging ? 'bg-walnut-2' : 'border-[var(--line)]',
         dragging ? 'z-20 opacity-90 shadow-deep' : '',
@@ -137,7 +137,7 @@ function PlayerCard(props: PlayerCardProps) {
       style={{
         transform: dragging ? `translateY(${dragOffset}px)` : undefined,
         borderColor: active && !arranging ? gem.glow : undefined,
-        boxShadow: active && !dragging && !arranging ? `0 0 0 1px ${gem.glow}, 0 8px 20px rgba(0,0,0,.35)` : undefined,
+        boxShadow: active && !dragging && !arranging ? `0 0 0 1px ${gem.glow}, var(--shadow-card)` : undefined,
       }}
     >
       <div className="flex items-center gap-1.5">
@@ -170,14 +170,14 @@ function PlayerCard(props: PlayerCardProps) {
                 if (e.key === 'Enter') e.currentTarget.blur();
                 if (e.key === 'Escape') props.onStopEdit();
               }}
-              className="w-full rounded border border-brass bg-charred-oak px-1.5 py-0.5 text-[14px] font-bold text-parchment outline-none"
+              className="w-full rounded border border-brass bg-charred-oak px-1.5 py-0.5 text-body font-bold text-parchment outline-none"
             />
           ) : (
-            <div className="truncate text-[14.5px] font-bold text-parchment" title="Double-click to rename">
+            <div className="truncate text-body font-bold text-parchment" title="Double-click to rename">
               {player.name}
             </div>
           )}
-          {isNext && !editing && <div className="text-[9.5px] font-bold uppercase tracking-[0.1em] text-parchment-dim">Up next</div>}
+          {isNext && !editing && <div className="text-micro font-bold uppercase tracking-kicker text-parchment-dim">Up next</div>}
         </div>
         {!arranging && hasLongestRoad && (
           <span title="Longest Road" className="flex h-[22px] w-[22px] items-center justify-center rounded-md border border-brass bg-brass/10 text-brass-soft">
@@ -202,7 +202,7 @@ function PlayerCard(props: PlayerCardProps) {
         <div className="mt-2 rounded-lg border border-brass/40 bg-charred-oak px-3 py-2" onClick={(e) => e.stopPropagation()}>
           <PointsLog score={score} manual={manual} slot={player.slot} dispatch={dispatch} />
           <div className="mt-2.5 border-t border-[var(--line)] pt-2.5">
-            <div className="mb-1.5 text-[10.5px] font-bold uppercase tracking-[0.06em] text-parchment-dim">Colour</div>
+            <div className="mb-1.5 text-micro font-bold uppercase tracking-caps text-parchment-dim">Colour</div>
             <GemPicker value={player.gem} holders={props.gemHolders} onPick={(gemId) => dispatch({ type: 'SET_PLAYER_GEM', slot: player.slot, gem: gemId })} />
           </div>
         </div>
@@ -371,7 +371,7 @@ export function PlayerList({ state, dispatch, scores, variant }: PlayersProps & 
           onMouseLeave={scheduleClose}
         >
           <div className="mb-1.5 flex items-center justify-between">
-            <span className="text-[11px] font-bold uppercase tracking-[0.08em] text-brass-soft">{popoverPlayer.name} · points</span>
+            <span className="text-label font-bold uppercase tracking-caps text-brass-soft">{popoverPlayer.name} · points</span>
             <button
               type="button"
               title="Rename"
@@ -387,7 +387,7 @@ export function PlayerList({ state, dispatch, scores, variant }: PlayersProps & 
           </div>
           <PointsLog score={scores[popoverPlayer.slot]} manual={state.manualScores[popoverPlayer.slot]} slot={popoverPlayer.slot} dispatch={dispatch} />
           <div className="mt-2.5 border-t border-[var(--line)] pt-2.5">
-            <div className="mb-1.5 text-[10.5px] font-bold uppercase tracking-[0.06em] text-parchment-dim">Colour</div>
+            <div className="mb-1.5 text-micro font-bold uppercase tracking-caps text-parchment-dim">Colour</div>
             <GemPicker
               value={popoverPlayer.gem}
               holders={gemHolders}
@@ -403,16 +403,16 @@ export function PlayerList({ state, dispatch, scores, variant }: PlayersProps & 
 /** Shown on the board right after Start: players pick colours and drag themselves into turn order, then begin placing pieces. */
 export function ArrangeCard({ dispatch }: { dispatch: Dispatch<GameAction> }) {
   return (
-    <div className="rounded-[15px] border border-brass bg-walnut p-3.5 shadow-deep">
-      <div className="text-[10.5px] font-bold uppercase tracking-[0.12em] text-brass-soft">Before we start</div>
+    <div className="rounded-2xl border border-brass bg-walnut p-3.5 shadow-deep">
+      <div className="text-micro font-bold uppercase tracking-kicker text-brass-soft">Before we start</div>
       <div className="mt-1 font-display text-[22px] font-semibold leading-tight text-parchment">Organize your players</div>
-      <p className="mb-3 mt-2 text-[12.5px] leading-snug text-parchment-dim">
+      <p className="mb-3 mt-2 text-label leading-snug text-parchment-dim">
         Drag players into turn order (first in the list plays first) and tap a colour for each. Tapping a colour someone else has swaps the two.
       </p>
       <button
         type="button"
         onClick={() => dispatch({ type: 'BEGIN_OPENING' })}
-        className="flex w-full items-center justify-center gap-1 rounded-lg border border-brass bg-brass px-3 py-2.5 text-[12.5px] font-bold uppercase tracking-[0.05em] text-charred-oak transition-colors hover:bg-brass-soft"
+        className="flex w-full items-center justify-center gap-1 rounded-lg border border-brass bg-brass px-3 py-2.5 text-label font-bold uppercase tracking-caps text-charred-oak transition-colors hover:bg-brass-soft"
       >
         Start placing pieces <ChevronRight size={15} strokeWidth={2.4} />
       </button>
@@ -431,20 +431,20 @@ export function TurnCard({ state, dispatch }: { state: GameState; dispatch: Disp
   const half = total / 2;
 
   return (
-    <div className="rounded-[15px] border bg-walnut p-3 shadow-deep" style={{ borderColor: gem.glow }}>
-      <div className="text-[10.5px] font-bold uppercase tracking-[0.12em] text-brass-soft">
+    <div className="rounded-2xl border bg-walnut p-3 shadow-deep" style={{ borderColor: gem.glow }}>
+      <div className="text-micro font-bold uppercase tracking-kicker text-brass-soft">
         {opening ? `Opening · round ${opening.index < half ? 1 : 2} of 2` : `Round ${state.round}`}
       </div>
       <div className="mb-2.5 mt-2 flex items-center gap-2.5">
         <GemIcon gem={gem} size={38} />
         <div className="min-w-0">
-          <div className="text-[10.5px] font-bold uppercase tracking-[0.08em] text-parchment-dim">Now playing</div>
+          <div className="text-micro font-bold uppercase tracking-caps text-parchment-dim">Now playing</div>
           <div className="truncate font-display text-[24px] font-semibold leading-tight text-parchment">{current.name}</div>
         </div>
       </div>
       {opening ? (
         <div>
-          <div className="text-[13px] font-semibold text-parchment">
+          <div className="text-small font-semibold text-parchment">
             {opening.step === 'settlement' ? 'Place a settlement anywhere legal' : 'Now a road next to it'}
           </div>
           <div className="mt-2 flex gap-1">
@@ -461,7 +461,7 @@ export function TurnCard({ state, dispatch }: { state: GameState; dispatch: Disp
           type="button"
           onClick={() => dispatch({ type: 'NEXT_TURN' })}
           title="Next turn (N)"
-          className="flex w-full items-center justify-center gap-1 rounded-lg border border-brass bg-brass px-3 py-2.5 text-[12.5px] font-bold uppercase tracking-[0.05em] text-charred-oak transition-colors hover:bg-brass-soft"
+          className="flex w-full items-center justify-center gap-1 rounded-lg border border-brass bg-brass px-3 py-2.5 text-label font-bold uppercase tracking-caps text-charred-oak transition-colors hover:bg-brass-soft"
         >
           Next turn <ChevronRight size={15} strokeWidth={2.4} />
         </button>

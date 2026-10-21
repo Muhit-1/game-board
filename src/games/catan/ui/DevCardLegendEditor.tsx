@@ -35,7 +35,7 @@ export function DevCardLegendEditor({ rows, onChange, stacked = false, large = f
                 value={row.label}
                 onChange={(e) => updateRow(row.id, 'label', e.target.value)}
                 placeholder="Card"
-                className="min-w-0 flex-1 rounded-md border border-[var(--line)] bg-charred-oak px-2.5 py-1.5 text-[13.5px] font-semibold text-brass-soft placeholder:text-parchment-dim/70 outline-none focus:border-brass"
+                className="min-w-0 flex-1 rounded-md border border-[var(--line)] bg-charred-oak px-2.5 py-1.5 text-small font-semibold text-brass-soft placeholder:text-parchment-dim/70 outline-none focus:border-brass"
               />
               <IconButton title="Remove row" variant="danger" onClick={() => removeRow(row.id)}>
                 <Trash2 size={15} />
@@ -45,7 +45,7 @@ export function DevCardLegendEditor({ rows, onChange, stacked = false, large = f
               value={row.meaning}
               onChange={(e) => updateRow(row.id, 'meaning', e.target.value)}
               placeholder="Meaning"
-              className="w-full rounded-md border border-[var(--line)] bg-charred-oak px-2.5 py-1.5 text-[13.5px] text-parchment placeholder:text-parchment-dim/70 outline-none focus:border-brass"
+              className="w-full rounded-md border border-[var(--line)] bg-charred-oak px-2.5 py-1.5 text-small text-parchment placeholder:text-parchment-dim/70 outline-none focus:border-brass"
             />
           </div>
         ))}
@@ -55,13 +55,13 @@ export function DevCardLegendEditor({ rows, onChange, stacked = false, large = f
             value={row.label}
             onChange={(e) => updateRow(row.id, 'label', e.target.value)}
             placeholder="Card"
-            className={`w-[38%] min-w-0 rounded-md border border-[var(--line)] bg-charred-oak px-2.5 ${large ? 'py-2.5 text-[16px]' : 'py-2 text-[13.5px]'} text-parchment placeholder:text-parchment-dim/70 outline-none focus:border-brass`}
+            className={`w-[38%] min-w-0 rounded-md border border-[var(--line)] bg-charred-oak px-2.5 ${large ? 'py-2.5 text-md' : 'py-2 text-small'} text-parchment placeholder:text-parchment-dim/70 outline-none focus:border-brass`}
           />
           <input
             value={row.meaning}
             onChange={(e) => updateRow(row.id, 'meaning', e.target.value)}
             placeholder="Meaning"
-            className={`min-w-0 flex-1 rounded-md border border-[var(--line)] bg-charred-oak px-2.5 ${large ? 'py-2.5 text-[16px]' : 'py-2 text-[13.5px]'} text-parchment placeholder:text-parchment-dim/70 outline-none focus:border-brass`}
+            className={`min-w-0 flex-1 rounded-md border border-[var(--line)] bg-charred-oak px-2.5 ${large ? 'py-2.5 text-md' : 'py-2 text-small'} text-parchment placeholder:text-parchment-dim/70 outline-none focus:border-brass`}
           />
           <IconButton title="Remove row" variant="danger" onClick={() => removeRow(row.id)}>
             <Trash2 size={15} />
@@ -71,7 +71,7 @@ export function DevCardLegendEditor({ rows, onChange, stacked = false, large = f
       <button
         type="button"
         onClick={addRow}
-        className="mt-1 flex items-center justify-center gap-1.5 rounded-md border border-dashed border-[var(--line)] py-2 text-[12px] font-semibold uppercase tracking-[0.05em] text-brass-soft hover:border-brass hover:text-brass"
+        className="mt-1 flex items-center justify-center gap-1.5 rounded-md border border-dashed border-[var(--line)] py-2 text-label font-semibold uppercase tracking-caps text-brass-soft hover:border-brass hover:text-brass"
       >
         <Plus size={14} /> Add row
       </button>

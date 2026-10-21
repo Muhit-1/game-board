@@ -16,7 +16,7 @@ function RoundButton({ label, onClick, children }: { label: string; onClick: () 
       onClick={onClick}
       title={label}
       aria-label={label}
-      className="flex h-[38px] w-[38px] items-center justify-center rounded-[10px] border border-[var(--line)] bg-walnut text-brass shadow-[0_8px_20px_rgba(0,0,0,.35)] transition-colors hover:bg-walnut-2"
+      className="flex h-[38px] w-[38px] items-center justify-center rounded-lg border border-[var(--line)] bg-walnut text-brass shadow-card transition-colors hover:bg-walnut-2"
     >
       {children}
     </button>
