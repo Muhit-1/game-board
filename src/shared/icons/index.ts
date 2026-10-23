@@ -39,4 +39,5 @@ export {
   Delete,
   Palette,
   BookOpen,
+  Maximize,
 } from 'lucide-react';

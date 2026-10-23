@@ -46,11 +46,15 @@ export function TurnCard({ state, onOpenSecret }: TurnCardProps) {
       <div className="mb-2.5 mt-2 flex items-center gap-2.5">
         <GemIcon gem={gem} size={38} />
         <div className="min-w-0">
-          <div className="text-micro font-bold uppercase tracking-caps text-parchment-dim">{state.turn.side === 'mrx' ? 'Mr. X to move' : 'Detective to move'}</div>
+          <div className="text-micro font-bold uppercase tracking-caps text-parchment-dim">{state.winner ? 'Game over' : state.turn.side === 'mrx' ? 'Mr. X to move' : 'Detective to move'}</div>
           <div className="truncate font-display text-[24px] font-semibold leading-tight text-parchment">{current.name}</div>
         </div>
       </div>
-      {state.turn.side === 'mrx' ? (
+      {state.winner ? (
+        <div className="text-small font-semibold leading-snug text-parchment">
+          {state.winner.side === 'detectives' ? 'The detectives win.' : 'Mr. X gets away.'} Mr. X's real position is marked on the map.
+        </div>
+      ) : state.turn.side === 'mrx' ? (
         <button
           type="button"
           onClick={onOpenSecret}

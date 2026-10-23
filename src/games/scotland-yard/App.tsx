@@ -98,7 +98,8 @@ export function App() {
   useEffect(() => {
     if (!state.skipNotice) return;
     const names = state.skipNotice.slots.map((s) => state.players.find((p) => p.slot === s)?.name).filter(Boolean);
-    showNotice(`${names.join(' and ')} ${names.length === 1 ? 'has' : 'have'} no move left — skipped.`);
+    const list = names.length > 1 ? `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}` : names[0];
+    showNotice(`${list} ${names.length === 1 ? 'has' : 'have'} no move left — skipped.`);
     playSound('error');
   }, [state.skipNotice]);
 
@@ -239,7 +240,7 @@ export function App() {
           onClose={() => setReveal(null)}
         />
       )}
-      {secretOpen && playing && state.turn.side === 'mrx' && (
+      {secretOpen && playing && (
         <SecretPad state={state} dispatch={dispatch} onClose={() => setSecretOpen(false)} onMoved={() => playSound('settlement')} />
       )}
       {state.winner && !winDismissed && (
