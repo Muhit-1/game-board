@@ -1,4 +1,6 @@
-import { memo, useEffect, useReducer } from 'react';
+import { memo, useEffect, useReducer, useRef } from 'react';
+import { useMapCamera } from './useMapCamera';
+import { Maximize, Minus, Plus } from '../../../shared/icons';
 import { MAP_HEIGHT, MAP_WIDTH, STATIONS } from '../data/stations';
 import { STATION_BY_ID, stationKind } from '../data/graph';
 import { MAP_EDGES, ensureMapGround, peekMapGround, roadPath } from './mapArt';
@@ -129,8 +131,19 @@ export function MapView({ pawns, lastSeen, targets, revealedStation, onStationCl
   const seen = lastSeen ? STATION_BY_ID.get(lastSeen.station) : undefined;
   const revealed = revealedStation !== null ? STATION_BY_ID.get(revealedStation) : undefined;
 
+  const svgRef = useRef<SVGSVGElement>(null);
+  const { camera, zoomed, zoomBy, reset, wasDragged, handlers } = useMapCamera(svgRef);
+  const cameraHeight = camera.w * (MAP_HEIGHT / MAP_WIDTH);
+
   return (
-    <svg viewBox={`0 0 ${MAP_WIDTH} ${MAP_HEIGHT}`} className="h-full w-full select-none" style={{ touchAction: 'manipulation' }}>
+    <div className="relative h-full w-full">
+    <svg
+      ref={svgRef}
+      viewBox={`${camera.x} ${camera.y} ${camera.w} ${cameraHeight}`}
+      className="h-full w-full select-none"
+      style={{ touchAction: 'none' }}
+      {...handlers}
+    >
       <PawnDefs />
       <MapBase ground={ground} />
 
@@ -161,7 +174,7 @@ export function MapView({ pawns, lastSeen, targets, revealedStation, onStationCl
         if (!s) return null;
         const color = TICKET_COLORS[tickets[0]];
         return (
-          <g key={`target-${id}`} onClick={() => onStationClick(id)} style={{ cursor: 'pointer' }}>
+          <g key={`target-${id}`} onClick={() => !wasDragged() && onStationClick(id)} style={{ cursor: 'pointer' }}>
             <circle cx={s.x} cy={s.y} r={46} fill={color} fillOpacity={0.24} stroke={color} strokeWidth={9} />
             {tickets.slice(1).map((t, i) => (
               <circle key={t} cx={s.x - 12 + i * 24} cy={s.y - 58} r={9} fill={TICKET_COLORS[t]} stroke="#fff" strokeWidth={3} />
@@ -186,5 +199,34 @@ export function MapView({ pawns, lastSeen, targets, revealedStation, onStationCl
         </g>
       )}
     </svg>
+    <div className="absolute bottom-2 left-2 flex flex-col gap-1.5">
+      <ZoomButton label="Zoom in" onClick={() => zoomBy(1.5)}>
+        <Plus size={16} strokeWidth={2.2} />
+      </ZoomButton>
+      <ZoomButton label="Zoom out" onClick={() => zoomBy(1 / 1.5)} disabled={!zoomed}>
+        <Minus size={16} strokeWidth={2.2} />
+      </ZoomButton>
+      {zoomed && (
+        <ZoomButton label="Show the whole map" onClick={reset}>
+          <Maximize size={15} strokeWidth={2.2} />
+        </ZoomButton>
+      )}
+    </div>
+    </div>
+  );
+}
+
+function ZoomButton({ label, onClick, disabled = false, children }: { label: string; onClick: () => void; disabled?: boolean; children: React.ReactNode }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      title={label}
+      aria-label={label}
+      className="flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--line)] bg-walnut/90 text-brass shadow-card transition-colors hover:bg-walnut-2 disabled:opacity-40"
+    >
+      {children}
+    </button>
   );
 }

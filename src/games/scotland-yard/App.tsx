@@ -169,7 +169,7 @@ export function App() {
         style={{ boxShadow: currentGem && playing ? `inset 0 0 0 5px ${currentGem.glow}, inset 0 0 90px ${currentGem.glow}55` : undefined }}
       />
 
-      <main className="relative min-h-0 flex-1 transform-gpu p-3">
+      <main className="relative aspect-[13/9] max-h-[58vh] w-full shrink-0 transform-gpu p-3 min-[1100px]:aspect-auto min-[1100px]:max-h-none min-[1100px]:min-h-0 min-[1100px]:w-auto min-[1100px]:flex-1">
         <MapView
           pawns={detectives.map((d) => ({ slot: d.slot, gem: d.gem, station: state.positions[d.slot] }))}
           lastSeen={state.lastSeen}
@@ -179,7 +179,7 @@ export function App() {
         />
       </main>
 
-      <aside className="z-10 flex max-h-[46vh] w-full shrink-0 flex-col gap-2.5 overflow-y-auto p-3 scrollbar-ironwood min-[1100px]:max-h-none min-[1100px]:w-[clamp(340px,24vw,440px)] min-[1100px]:pl-0">
+      <aside className="z-10 flex min-h-0 w-full flex-1 flex-col gap-2.5 overflow-y-auto p-3 scrollbar-ironwood min-[1100px]:w-[clamp(340px,24vw,440px)] min-[1100px]:flex-none min-[1100px]:pl-0">
         <div className="flex items-center justify-between gap-2">
           <h1 className="font-display text-[24px] font-semibold text-[color:var(--on-table)]">Scotland Yard</h1>
           <div className="flex gap-2">
@@ -218,7 +218,7 @@ export function App() {
 
         <PlayerList state={state} dispatch={dispatch} />
         <TravelLog log={state.log} nextRound={state.phase === 'playing' ? state.log.length + 1 : 0} />
-        <div className="text-center text-label text-parchment-dim/80">
+        <div className="text-center text-label text-[color:var(--on-table-dim)]">
           {round > 0 && playing ? `${state.log.length} of 24 Mr. X moves logged` : ''}
         </div>
       </aside>
