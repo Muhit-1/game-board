@@ -37,5 +37,6 @@ export {
   EyeOff,
   Copy,
   Delete,
+  Palette,
   BookOpen,
 } from 'lucide-react';

@@ -4,6 +4,8 @@ import { DETECTIVE_STARTS, MRX_STARTS, REVEAL_ROUNDS, TOTAL_ROUNDS } from './dat
 import { DETECTIVE_START_TICKETS, detectiveMoves, detectivesOf, mrXMoves, mrXOf, mrXStartTickets, validateDetectiveMove, validateMrXMove } from './rules';
 import { loadLook } from './prefs';
 
+export type { GameState } from './types';
+
 export const MAX_NAME_LENGTH = 14;
 const HISTORY_LIMIT = 200;
 
