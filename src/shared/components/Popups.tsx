@@ -1,8 +1,8 @@
 import { useEffect } from 'react';
 import type { ReactNode } from 'react';
-import type { GemDef } from '../../../shared/theme/gems';
-import { GemIcon } from '../../../shared/components/GemIcon';
-import { Users } from '../../../shared/icons';
+import type { GemDef } from '../theme/gems';
+import { GemIcon } from './GemIcon';
+import { Users } from '../icons';
 
 const AWARD_DURATION_MS = 3800;
 const BANNER_DURATION_MS = 1900;

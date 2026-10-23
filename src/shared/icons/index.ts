@@ -29,5 +29,13 @@ export {
   VolumeX,
   ChevronRight,
   Swords,
+  Car,
+  Bus,
+  TrainFront,
+  Ship,
+  Eye,
+  EyeOff,
+  Copy,
+  Delete,
   BookOpen,
 } from 'lucide-react';

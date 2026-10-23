@@ -11,7 +11,7 @@ import { TOOLS, ToolsPanel } from './ui/ToolsPanel';
 import { ReferencePanel } from './ui/ReferencePanel';
 import { SystemButtons } from './ui/SystemButtons';
 import { MobileControls } from './ui/MobileControls';
-import { AwardPopup, PlayerChip, TurnBanner } from './ui/Popups';
+import { AwardPopup, PlayerChip, TurnBanner } from '../../shared/components/Popups';
 import { Toast } from '../../shared/components/Toast';
 import { ConfirmDialog } from '../../shared/components/ConfirmDialog';
 import { getGem } from '../../shared/theme/gems';

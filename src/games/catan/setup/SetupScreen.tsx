@@ -7,7 +7,8 @@ import { BoardView } from '../board/BoardView';
 import { generateBoard } from '../board/generateBoard';
 import { boardKindForPlayers, describeBoard, MAX_PLAYERS, MIN_PLAYERS } from '../board/boardConfig';
 import { gemForSlot } from '../../../shared/theme/gems';
-import { BoardStylePicker, TableColourPicker } from './LookPickers';
+import { BoardStylePicker } from './LookPickers';
+import { TableColourPicker } from '../../../shared/components/TableColourPicker';
 import { tableThemeStyle } from '../../../shared/theme/tableThemes';
 import { Shuffle, Users } from '../../../shared/icons';
 
