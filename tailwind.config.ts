@@ -4,7 +4,7 @@ import type { Config } from 'tailwindcss';
 const rgb = (name: string) => `rgb(var(--${name}-rgb) / <alpha-value>)`;
 
 export default {
-  content: ['./index.html', './catan/index.html', './src/**/*.{ts,tsx}'],
+  content: ['./index.html', './catan/index.html', './scotland-yard/index.html', './src/**/*.{ts,tsx}'],
   theme: {
     extend: {
       colors: {

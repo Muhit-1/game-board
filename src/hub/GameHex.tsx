@@ -40,8 +40,8 @@ function roundedPolygonPath(points: [number, number][], radius: number): string 
 const HEX_PATH = roundedPolygonPath(hexPoints(CENTER[0], CENTER[1], OUTER_RADIUS), CORNER_RADIUS);
 
 /**
- * The hub tile for one game: a simple, clear hexagon (softly rounded corners) in a warm
- * gradient orange — deliberately its own accent color against the hub's light cream page.
+ * The hub tile for one game: a simple, clear hexagon (softly rounded corners) in the game's own
+ * gradient accent colour against the hub's light cream page.
  * Idle state shows just the hex; hovering reveals the game's name and description.
  */
 export function GameHex({ game }: { game: GameEntry }) {
@@ -49,20 +49,20 @@ export function GameHex({ game }: { game: GameEntry }) {
     <a
       href={game.path}
       className="group relative block outline-none transition-transform duration-200 hover:scale-[1.03]"
-      style={{ width: WIDTH, height: HEIGHT, filter: 'drop-shadow(0 16px 30px rgba(120,58,10,.35))' }}
+      style={{ width: WIDTH, height: HEIGHT, filter: `drop-shadow(0 16px 30px ${game.colors[2]}59)` }}
     >
       <svg width={WIDTH} height={HEIGHT} viewBox={`0 0 ${WIDTH} ${HEIGHT}`}>
         <defs>
-          <linearGradient id={`hexOrange-${game.id}`} x1="15%" y1="8%" x2="85%" y2="95%">
-            <stop offset="0%" stopColor="#ffc27a" />
-            <stop offset="45%" stopColor="#f2883a" />
-            <stop offset="100%" stopColor="#c05a12" />
+          <linearGradient id={`hexGradient-${game.id}`} x1="15%" y1="8%" x2="85%" y2="95%">
+            <stop offset="0%" stopColor={game.colors[0]} />
+            <stop offset="45%" stopColor={game.colors[1]} />
+            <stop offset="100%" stopColor={game.colors[2]} />
           </linearGradient>
           <clipPath id={`hexClip-${game.id}`}>
             <path d={HEX_PATH} />
           </clipPath>
         </defs>
-        <path d={HEX_PATH} fill={`url(#hexOrange-${game.id})`} stroke="#a9490a" strokeWidth={3} />
+        <path d={HEX_PATH} fill={`url(#hexGradient-${game.id})`} stroke={game.colors[2]} strokeWidth={3} />
         <g clipPath={`url(#hexClip-${game.id})`}>
           <ellipse cx={CENTER[0] - 30} cy={CENTER[1] - 75} rx={110} ry={65} fill="#fff" opacity={0.25} />
         </g>

@@ -15,6 +15,7 @@ export default defineConfig({
       input: {
         main: resolve(__dirname, 'index.html'),
         catan: resolve(__dirname, 'catan/index.html'),
+        scotlandYard: resolve(__dirname, 'scotland-yard/index.html'),
       },
     },
   },

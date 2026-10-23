@@ -1,0 +1,20 @@
+Game Board — third-party notices
+
+Scotland Yard station data
+--------------------------
+src/games/scotland-yard/data/stations.ts is adapted from
+GameInitializer/resources/stations.json in the project "ScotlandYard"
+https://github.com/tim-koehler/ScotlandYard
+licensed under the Apache License, Version 2.0
+https://www.apache.org/licenses/LICENSE-2.0
+
+Changes made: converted from JSON to TypeScript, placeholder station 0 removed,
+two one-way taxi links made two-way, the three ferry links added, positions
+rescaled into this project's own map space.
+
+Only the station graph (which stations are linked by taxi, bus and underground,
+and where they sit on the map) is used. The board artwork of the original game
+is not included; this project draws its own map.
+
+Scotland Yard is a trademark of its respective owners. This is an unofficial,
+non-commercial fan companion tool.
