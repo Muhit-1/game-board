@@ -40,4 +40,6 @@ export {
   Palette,
   BookOpen,
   Maximize,
+  Expand,
+  Shrink,
 } from 'lucide-react';

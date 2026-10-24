@@ -46,6 +46,26 @@ export function App() {
   const [confirmEnd, setConfirmEnd] = useState<'caught' | 'trapped' | null>(null);
   const [showPalette, setShowPalette] = useState(false);
   const [winDismissed, setWinDismissed] = useState(false);
+  const [fullscreen, setFullscreen] = useState(false);
+
+  /** Map only: every panel goes away. Uses the browser's full screen when it allows it, otherwise just fills the window. */
+  function toggleFullscreen(on = !fullscreen) {
+    setFullscreen(on);
+    try {
+      if (on) void document.documentElement.requestFullscreen?.().catch(() => undefined);
+      else if (document.fullscreenElement) void document.exitFullscreen().catch(() => undefined);
+    } catch {
+      /* the window-filling mode still works */
+    }
+  }
+
+  useEffect(() => {
+    const onChange = () => {
+      if (!document.fullscreenElement) setFullscreen(false);
+    };
+    document.addEventListener('fullscreenchange', onChange);
+    return () => document.removeEventListener('fullscreenchange', onChange);
+  }, []);
 
   const mrX = state.players.length ? mrXOf(state.players) : null;
   const detectives = useMemo(() => detectivesOf(state.players), [state.players]);
@@ -114,7 +134,7 @@ export function App() {
     saveLook({ tableTheme: state.tableTheme });
   }, [state.tableTheme]);
 
-  // Keyboard: Z = undo.
+  // Keyboard: Z = undo, F = full screen map, Esc leaves it.
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
       if (confirmNew || confirmEnd || e.altKey) return;
@@ -126,10 +146,12 @@ export function App() {
       }
       if (e.ctrlKey || e.metaKey) return;
       if (key === 'z') dispatch({ type: 'UNDO' });
+      if (key === 'f') toggleFullscreen();
+      if (key === 'escape' && fullscreen) toggleFullscreen(false);
     }
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [confirmNew, confirmEnd]);
+  }, [confirmNew, confirmEnd, fullscreen]);
 
   if (state.phase === 'setup') return <SetupScreen state={state} dispatch={dispatch} />;
 
@@ -171,17 +193,25 @@ export function App() {
         style={{ boxShadow: currentGem && playing ? `inset 0 0 0 5px ${currentGem.glow}, inset 0 0 90px ${currentGem.glow}55` : undefined }}
       />
 
-      <main className="relative aspect-[13/9] max-h-[58vh] w-full shrink-0 transform-gpu p-3 min-[1100px]:aspect-auto min-[1100px]:max-h-none min-[1100px]:min-h-0 min-[1100px]:w-auto min-[1100px]:flex-1">
+      <main
+        className={
+          fullscreen
+            ? 'fixed inset-0 z-[8] transform-gpu p-1.5'
+            : 'relative aspect-[13/9] max-h-[58vh] w-full shrink-0 transform-gpu p-3 min-[1100px]:aspect-auto min-[1100px]:max-h-none min-[1100px]:min-h-0 min-[1100px]:w-auto min-[1100px]:flex-1'
+        }
+      >
         <MapView
           pawns={detectives.map((d) => ({ slot: d.slot, gem: d.gem, station: state.positions[d.slot] }))}
           lastSeen={state.lastSeen}
           targets={targets}
           picking={state.revealPending !== null}
           onStationClick={onStationClick}
+          fullscreen={fullscreen}
+          onToggleFullscreen={() => toggleFullscreen()}
         />
       </main>
 
-      <aside className="z-10 flex min-h-0 w-full flex-1 flex-col gap-2.5 overflow-y-auto p-3 scrollbar-ironwood min-[1100px]:w-[clamp(340px,24vw,440px)] min-[1100px]:flex-none min-[1100px]:pl-0">
+      <aside className={`z-10 flex min-h-0 w-full flex-1 flex-col gap-2.5 overflow-y-auto p-3 scrollbar-ironwood min-[1100px]:w-[clamp(340px,24vw,440px)] min-[1100px]:flex-none min-[1100px]:pl-0 ${fullscreen ? 'hidden' : ''}`}>
         <div className="flex items-center justify-between gap-2">
           <h1 className="font-display text-[24px] font-semibold text-[color:var(--on-table)]">Scotland Yard</h1>
           <div className="flex gap-2">
@@ -225,6 +255,14 @@ export function App() {
         </div>
       </aside>
 
+      {fullscreen && state.revealPending !== null && (
+        <div className="fixed left-1/2 top-3 z-[45] flex -translate-x-1/2 items-center gap-3 rounded-full border-2 border-brass bg-charred-oak/95 py-2 pl-5 pr-2 shadow-deep">
+          <span className="text-body font-bold text-parchment">{mrX?.name} says where he is. Tap that station.</span>
+          <button type="button" onClick={() => dispatch({ type: 'SKIP_REVEAL' })} className="rounded-full border border-[var(--line)] px-3 py-1.5 text-label font-bold uppercase tracking-caps text-parchment hover:bg-walnut-2">
+            Skip
+          </button>
+        </div>
+      )}
       <Toast message={notice} />
       {banner && <TurnBanner id={banner.id} kicker={banner.kicker} name={banner.name} gem={bannerGem} durationMs={banner.durationMs} onDone={() => setBanner(null)} />}
       {reveal && revealGem && mrX && (

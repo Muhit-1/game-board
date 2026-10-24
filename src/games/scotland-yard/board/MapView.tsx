@@ -1,6 +1,6 @@
 import { memo, useEffect, useRef, useState } from 'react';
 import { useMapCamera } from './useMapCamera';
-import { Maximize, Minus, Plus } from '../../../shared/icons';
+import { Expand, Maximize, Minus, Plus, Shrink } from '../../../shared/icons';
 import { MAP_HEIGHT, MAP_WIDTH, STATIONS } from '../data/stations';
 import { STATION_BY_ID, stationKind } from '../data/graph';
 import mapQuick from './assets/london-1800.webp';
@@ -23,6 +23,9 @@ interface MapViewProps {
   /** While true every station can be tapped (the table marks the station Mr. X named). */
   picking: boolean;
   onStationClick: (station: number) => void;
+  /** Full-screen toggle shown in the zoom box (omitted where it makes no sense, e.g. the setup preview). */
+  fullscreen?: boolean;
+  onToggleFullscreen?: () => void;
 }
 
 /** The drawn London map: a quick 1800 px image first, the 3900 px one swapped in once it has loaded (for zooming). */
@@ -96,7 +99,7 @@ function Pawn({ x, y, gem }: { x: number; y: number; gem: string }) {
   const color = getGem(gem);
   if (!color) return null;
   return (
-    <g pointerEvents="none">
+    <g pointerEvents="none" opacity={0.55}>
       <ellipse cx={x + 6} cy={y + 36} rx={30} ry={11} fill="rgba(0,0,0,.38)" />
       <path
         d={`M${x - 26} ${y + 34} Q${x - 24} ${y + 6} ${x - 10} ${y - 4} Q${x - 26} ${y - 12} ${x - 24} ${y - 34} A24 24 0 1 1 ${x + 24} ${y - 34} Q${x + 26} ${y - 12} ${x + 10} ${y - 4} Q${x + 24} ${y + 6} ${x + 26} ${y + 34} Z`}
@@ -108,7 +111,7 @@ function Pawn({ x, y, gem }: { x: number; y: number; gem: string }) {
   );
 }
 
-export function MapView({ pawns, lastSeen, targets, picking, onStationClick }: MapViewProps) {
+export function MapView({ pawns, lastSeen, targets, picking, onStationClick, fullscreen = false, onToggleFullscreen }: MapViewProps) {
   const image = useMapImage();
   const seen = lastSeen ? STATION_BY_ID.get(lastSeen.station) : undefined;
 
@@ -178,16 +181,19 @@ export function MapView({ pawns, lastSeen, targets, picking, onStationClick }: M
           </g>
         ))}
     </svg>
-    <div className="absolute bottom-2 left-2 flex flex-col gap-1.5">
+    <div className="absolute left-2 top-2 flex flex-col gap-1.5 rounded-xl border border-[var(--line)] bg-walnut/80 p-1.5 shadow-card" role="group" aria-label="Map zoom">
       <ZoomButton label="Zoom in" onClick={() => zoomBy(1.5)}>
         <Plus size={16} strokeWidth={2.2} />
       </ZoomButton>
       <ZoomButton label="Zoom out" onClick={() => zoomBy(1 / 1.5)} disabled={!zoomed}>
         <Minus size={16} strokeWidth={2.2} />
       </ZoomButton>
-      {zoomed && (
-        <ZoomButton label="Show the whole map" onClick={reset}>
-          <Maximize size={15} strokeWidth={2.2} />
+      <ZoomButton label="Show the whole map" onClick={reset} disabled={!zoomed}>
+        <Maximize size={15} strokeWidth={2.2} />
+      </ZoomButton>
+      {onToggleFullscreen && (
+        <ZoomButton label={fullscreen ? 'Leave full screen (Esc)' : 'Full screen map (F)'} onClick={onToggleFullscreen}>
+          {fullscreen ? <Shrink size={15} strokeWidth={2.2} /> : <Expand size={15} strokeWidth={2.2} />}
         </ZoomButton>
       )}
     </div>

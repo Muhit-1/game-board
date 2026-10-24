@@ -201,10 +201,6 @@ function PlayerCard(props: PlayerCardProps) {
       {showInlineLog && (
         <div className="mt-2 rounded-lg border border-brass/40 bg-charred-oak px-3 py-2" onClick={(e) => e.stopPropagation()}>
           <PointsLog score={score} manual={manual} slot={player.slot} dispatch={dispatch} />
-          <div className="mt-2.5 border-t border-[var(--line)] pt-2.5">
-            <div className="mb-1.5 text-micro font-bold uppercase tracking-caps text-parchment-dim">Colour</div>
-            <GemPicker value={player.gem} holders={props.gemHolders} onPick={(gemId) => dispatch({ type: 'SET_PLAYER_GEM', slot: player.slot, gem: gemId })} />
-          </div>
         </div>
       )}
     </div>
@@ -386,14 +382,6 @@ export function PlayerList({ state, dispatch, scores, variant }: PlayersProps & 
             </button>
           </div>
           <PointsLog score={scores[popoverPlayer.slot]} manual={state.manualScores[popoverPlayer.slot]} slot={popoverPlayer.slot} dispatch={dispatch} />
-          <div className="mt-2.5 border-t border-[var(--line)] pt-2.5">
-            <div className="mb-1.5 text-micro font-bold uppercase tracking-caps text-parchment-dim">Colour</div>
-            <GemPicker
-              value={popoverPlayer.gem}
-              holders={gemHolders}
-              onPick={(gemId) => dispatch({ type: 'SET_PLAYER_GEM', slot: popoverPlayer.slot, gem: gemId })}
-            />
-          </div>
         </div>
       )}
     </div>
