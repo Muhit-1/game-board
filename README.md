@@ -7,7 +7,7 @@ A simple site my cousins and I made for our game nights. We kept ending up makin
 | Game | What it does |
 |---|---|
 | **Catan** | A shared on-screen board and scoreboard for a physical Catan game night. You still use real cards and real dice — this draws the board, lets everyone place their pieces, tracks whose turn it is, and keeps score automatically where it can. |
-| **Scotland Yard** | A shared map of London for a physical Scotland Yard game night: one Mr. X and five detectives. It shows the detectives' pieces, counts everyone's tickets, keeps Mr. X's travel log and announces the reveal rounds. Mr. X types his moves on a private keypad, so the station stays hidden from the table. |
+| **Scotland Yard** | A shared map of London for a physical Scotland Yard game night: one Mr. X and five detectives. It shows the detectives' pieces, counts everyone's tickets, keeps Mr. X's travel log and tells the table when Mr. X has to say where he is. Mr. X plays on a real paper notepad, so his position never appears on the screen. |
 
 More boards might get added here later if we make them.
 
@@ -43,12 +43,13 @@ The board always takes as much of the screen as possible; the panels sit in the 
 
 1. **Setup** — type six names and choose who is Mr. X (or pick at random). Choose a table colour.
 2. **Organize your players** — each detective picks a colour and you drag the detectives into turn order. Start stations are dealt at random; Mr. X's stays hidden.
-3. **Play** — Mr. X moves first each round. Press **Secret move**: a screen asks the detectives to look away, then Mr. X types the station number on a masked keypad and picks the ticket (taxi, bus, underground, or a black ticket; he can also use a double move). Only the ticket is logged, and on the reveal rounds (3, 8, 13, 18 and 24) the board announces where he is. Each detective then taps one of the glowing stations on the map; if more than one ticket works they choose which one to spend.
-4. **The end** — the detectives win by landing on Mr. X or trapping him; Mr. X wins by surviving all 24 rounds or if no detective can move any more. The board then shows where he really was.
+3. **Play** — Mr. X moves first each round. He writes his station on his own notepad, then taps the ticket he used (taxi, bus, underground, or a black ticket; he can also start a double move). The game logs the ticket, counts his black tickets and double moves, and passes the turn. Each detective then taps one of the glowing stations on the map; if more than one ticket works they choose which one to spend.
+4. **Reveal rounds** — in rounds 3, 8, 13, 18 and 24 the game announces that Mr. X has to say where he is. Everyone taps that station on the map to mark where he was last seen (or skips it), and the detectives carry on.
+5. **The end** — the table tells the game when the detectives catch Mr. X or trap him (*Caught Mr. X* / *Mr. X has nowhere to go*). Mr. X wins by surviving all 24 rounds, or when no detective can move any more.
 
-What it keeps track of: every ticket (the detectives start with 10 taxi, 8 bus and 4 underground; Mr. X has black tickets for the three ferries and as wildcards, and two double moves), moves that aren't legal for the ticket, detectives who have to be skipped, a last-seen marker for Mr. X, and undo. Pinch, scroll or use the zoom buttons to look closer at the map; on phones the panels sit under it.
+What it keeps track of: every detective's tickets (they start with 10 taxi, 8 bus and 4 underground; Mr. X has black tickets for the three ferries and as wildcards, and two double moves), the legality of each detective move, detectives who have to be skipped, the last-seen marker, and undo. Pinch, scroll or use the zoom buttons to look closer at the map; on phones the panels sit under it.
 
-Station numbers and connections come from the open-source [tim-koehler/ScotlandYard](https://github.com/tim-koehler/ScotlandYard) project (see `NOTICE`). The London map itself is drawn in code for this site; none of the original game's artwork is used. Start-station lists are entered from memory — check them against your own box if you care.
+Station numbers and connections come from the open-source [tim-koehler/ScotlandYard](https://github.com/tim-koehler/ScotlandYard) project (see `NOTICE`). The London map itself is drawn in code for this site; none of the original game's artwork is used. The detectives' start-station list is entered from memory — check it against your own box if you care.
 
 ## Run it locally
 

@@ -95,10 +95,10 @@ export function SetupScreen({ state, dispatch }: SetupScreenProps) {
         <section className="flex min-h-[320px] min-h-0 flex-col rounded-2xl border border-[var(--line)] bg-walnut p-6 shadow-deep sm:p-7">
           <h2 className="font-display text-2xl font-semibold text-parchment">The map</h2>
           <p className="mb-3 mt-1 text-md leading-relaxed text-parchment-dim">
-            199 stations. Taxi roads are yellow, bus lines teal, the underground red and dashed, the ferry dashed black. Start stations are drawn at random once you press Start.
+            199 stations. Taxi roads are yellow, bus lines teal, the underground red and dashed, the ferry dashed black. The detectives' start stations are drawn at random once you press Start. Mr. X plays on paper.
           </p>
           <div className="min-h-0 flex-1 overflow-hidden rounded-xl" style={{ background: tableThemeStyle(state.tableTheme).background }}>
-            <MapView pawns={[]} lastSeen={null} targets={NO_TARGETS} revealedStation={null} onStationClick={NOOP} />
+            <MapView pawns={[]} lastSeen={null} targets={NO_TARGETS} picking={false} onStationClick={NOOP} />
           </div>
         </section>
       </div>

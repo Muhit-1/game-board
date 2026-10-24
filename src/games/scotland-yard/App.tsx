@@ -7,7 +7,6 @@ import { SetupScreen } from './setup/SetupScreen';
 import { MapView } from './board/MapView';
 import { ArrangeCard, PlayerList, TurnCard, currentRound } from './ui/PlayersPanel';
 import { TravelLog } from './ui/TravelLog';
-import { SecretPad } from './ui/SecretPad';
 import { TicketChooser } from './ui/TicketChooser';
 import { WinDialog } from './ui/WinDialog';
 import { AwardPopup, PlayerChip, TurnBanner } from '../../shared/components/Popups';
@@ -39,12 +38,12 @@ function RoundButton({ label, onClick, disabled = false, children }: { label: st
 export function App() {
   const [state, dispatch] = useReducer(gameReducer, undefined, createInitialState);
   const [muted, setMutedState] = useState(isMuted);
-  const [secretOpen, setSecretOpen] = useState(false);
   const [chooser, setChooser] = useState<{ station: number; tickets: MoveTicket[] } | null>(null);
   const [banner, setBanner] = useState<{ id: number; name: string; gemId: string | null; kicker: string; durationMs?: number } | null>(null);
-  const [reveal, setReveal] = useState<{ id: number; round: number; station: number } | null>(null);
+  const [reveal, setReveal] = useState<{ id: number; round: number } | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [confirmNew, setConfirmNew] = useState(false);
+  const [confirmEnd, setConfirmEnd] = useState<'caught' | 'trapped' | null>(null);
   const [showPalette, setShowPalette] = useState(false);
   const [winDismissed, setWinDismissed] = useState(false);
 
@@ -57,7 +56,7 @@ export function App() {
   /** Stations the moving detective can reach, with the tickets that work for each. */
   const targets = useMemo(() => {
     const map = new Map<number, MoveTicket[]>();
-    if (state.phase !== 'playing' || state.turn.side !== 'detective') return map;
+    if (state.phase !== 'playing' || state.turn.side !== 'detective' || state.revealPending !== null) return map;
     detectiveMoves(state, state.turn.slot).forEach((m) => {
       const tickets = map.get(m.station) ?? [];
       if (!tickets.includes(m.ticket)) tickets.push(m.ticket);
@@ -65,7 +64,7 @@ export function App() {
       map.set(m.station, tickets);
     });
     return map;
-  }, [state.phase, state.turn, state.positions, state.tickets, state.players]);
+  }, [state.phase, state.turn, state.positions, state.tickets, state.players, state.revealPending]);
 
   function showNotice(message: string) {
     setNotice(message);
@@ -107,7 +106,6 @@ export function App() {
   useEffect(() => {
     if (state.winner) {
       setWinDismissed(false);
-      setSecretOpen(false);
       playSound('win');
     }
   }, [state.winner]);
@@ -116,10 +114,10 @@ export function App() {
     saveLook({ tableTheme: state.tableTheme });
   }, [state.tableTheme]);
 
-  // Keyboard: X = Mr. X's secret move, Z = undo.
+  // Keyboard: Z = undo.
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
-      if (confirmNew || secretOpen || e.altKey) return;
+      if (confirmNew || confirmEnd || e.altKey) return;
       if (e.target instanceof Element && e.target.closest('input, textarea, select, [contenteditable="true"]')) return;
       const key = e.key.toLowerCase();
       if ((e.ctrlKey || e.metaKey) && key === 'z') {
@@ -128,11 +126,10 @@ export function App() {
       }
       if (e.ctrlKey || e.metaKey) return;
       if (key === 'z') dispatch({ type: 'UNDO' });
-      if (key === 'x' && playing && state.turn.side === 'mrx') setSecretOpen(true);
     }
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [confirmNew, secretOpen, playing, state.turn]);
+  }, [confirmNew, confirmEnd]);
 
   if (state.phase === 'setup') return <SetupScreen state={state} dispatch={dispatch} />;
 
@@ -143,6 +140,11 @@ export function App() {
   }
 
   function onStationClick(station: number) {
+    if (state.revealPending !== null) {
+      dispatch({ type: 'SET_LAST_SEEN', station });
+      playSound('settlement');
+      return;
+    }
     const tickets = targets.get(station);
     if (!tickets) return;
     if (tickets.length === 1) moveDetective(station, tickets[0]);
@@ -174,7 +176,7 @@ export function App() {
           pawns={detectives.map((d) => ({ slot: d.slot, gem: d.gem, station: state.positions[d.slot] }))}
           lastSeen={state.lastSeen}
           targets={targets}
-          revealedStation={state.phase === 'finished' && mrX ? state.positions[mrX.slot] : null}
+          picking={state.revealPending !== null}
           onStationClick={onStationClick}
         />
       </main>
@@ -204,7 +206,7 @@ export function App() {
           </div>
         )}
 
-        {state.phase === 'arrange' ? <ArrangeCard dispatch={dispatch} /> : <TurnCard state={state} onOpenSecret={() => setSecretOpen(true)} />}
+        {state.phase === 'arrange' ? <ArrangeCard dispatch={dispatch} /> : <TurnCard state={state} dispatch={dispatch} onMrXLogged={() => playSound('road')} onEnd={setConfirmEnd} />}
 
         {chooser && movingTickets && (
           <TicketChooser
@@ -230,21 +232,25 @@ export function App() {
           id={reveal.id}
           icon={<Eye size={26} strokeWidth={2} />}
           kicker={`Round ${reveal.round} · reveal`}
-          title="Mr. X shows himself"
+          title="Mr. X, where are you?"
           who={<PlayerChip gem={revealGem} name={mrX.name} />}
-          sub={
-            <>
-              He is at station <b className="text-brass-soft">{reveal.station}</b>
-            </>
-          }
+          sub="Say your station out loud. Everyone taps it on the map to mark it."
           onClose={() => setReveal(null)}
         />
       )}
-      {secretOpen && playing && (
-        <SecretPad state={state} dispatch={dispatch} onClose={() => setSecretOpen(false)} onMoved={() => playSound('settlement')} />
-      )}
       {state.winner && !winDismissed && (
         <WinDialog state={state} onNewGame={() => dispatch({ type: 'NEW_GAME' })} onUndo={() => dispatch({ type: 'UNDO' })} onLookAtMap={() => setWinDismissed(true)} />
+      )}
+      {confirmEnd && (
+        <ConfirmDialog
+          message={confirmEnd === 'caught' ? 'A detective landed on Mr. X? The detectives win.' : 'Mr. X has no move left? The detectives win.'}
+          confirmLabel="Detectives win"
+          onConfirm={() => {
+            dispatch({ type: 'END_GAME', reason: confirmEnd });
+            setConfirmEnd(null);
+          }}
+          onCancel={() => setConfirmEnd(null)}
+        />
       )}
       {confirmNew && (
         <ConfirmDialog

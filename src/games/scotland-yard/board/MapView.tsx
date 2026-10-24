@@ -19,8 +19,8 @@ interface MapViewProps {
   lastSeen: LastSeen | null;
   /** Stations the moving detective can reach, with the tickets that work. */
   targets: Map<number, MoveTicket[]>;
-  /** Mr. X's real station — only passed once the game is over. */
-  revealedStation: number | null;
+  /** While true every station can be tapped (the table marks the station Mr. X named). */
+  picking: boolean;
   onStationClick: (station: number) => void;
 }
 
@@ -126,10 +126,9 @@ function Pawn({ x, y, gem }: { x: number; y: number; gem: string }) {
   );
 }
 
-export function MapView({ pawns, lastSeen, targets, revealedStation, onStationClick }: MapViewProps) {
+export function MapView({ pawns, lastSeen, targets, picking, onStationClick }: MapViewProps) {
   const ground = useMapGround();
   const seen = lastSeen ? STATION_BY_ID.get(lastSeen.station) : undefined;
-  const revealed = revealedStation !== null ? STATION_BY_ID.get(revealedStation) : undefined;
 
   const svgRef = useRef<SVGSVGElement>(null);
   const { camera, zoomed, zoomBy, reset, wasDragged, handlers } = useMapCamera(svgRef);
@@ -189,15 +188,13 @@ export function MapView({ pawns, lastSeen, targets, revealedStation, onStationCl
         return s ? <Pawn key={p.slot} x={s.x} y={s.y} gem={p.gem} /> : null;
       })}
 
-      {/* End of the game: Mr. X's real station. */}
-      {revealed && (
-        <g pointerEvents="none">
-          <circle cx={revealed.x} cy={revealed.y} r={50} fill="#111" fillOpacity={0.85} stroke="#fffaf0" strokeWidth={7} />
-          <text x={revealed.x} y={revealed.y + 2} textAnchor="middle" dominantBaseline="central" fontFamily="Karla, sans-serif" fontWeight={700} fontSize={46} fill="#fffaf0">
-            X
-          </text>
-        </g>
-      )}
+      {/* Marking Mr. X's named station: every station answers a tap. */}
+      {picking &&
+        STATIONS.map((st) => (
+          <g key={`pick-${st.id}`} onClick={() => !wasDragged() && onStationClick(st.id)} style={{ cursor: 'pointer' }}>
+            <circle cx={st.x} cy={st.y} r={46} fill="rgba(255,255,255,.18)" stroke="#fff" strokeWidth={6} strokeOpacity={0.85} />
+          </g>
+        ))}
     </svg>
     <div className="absolute bottom-2 left-2 flex flex-col gap-1.5">
       <ZoomButton label="Zoom in" onClick={() => zoomBy(1.5)}>

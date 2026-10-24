@@ -3,15 +3,14 @@ import type { StationData } from './stations';
 import type { Transport } from '../types';
 
 export const TOTAL_ROUNDS = 24;
-/** Mr. X shows himself after his move in these rounds. */
+/** Mr. X says where he is after his move in these rounds. */
 export const REVEAL_ROUNDS = [3, 8, 13, 18, 24];
 
 export const DETECTIVE_COUNT = 5;
 export const PLAYER_COUNT = DETECTIVE_COUNT + 1;
 
-/** Start cards: detectives and Mr. X draw their starting stations from these. */
+/** Start cards the detectives draw their starting stations from (Mr. X picks his own on paper). */
 export const DETECTIVE_STARTS = [13, 26, 29, 34, 50, 53, 91, 94, 103, 112, 117, 123, 138, 141, 155, 174, 197, 198];
-export const MRX_STARTS = [35, 45, 51, 71, 78, 104, 106, 127, 132, 146, 166, 170, 172];
 
 export const STATION_BY_ID = new Map<number, StationData>(STATIONS.map((s) => [s.id, s]));
 

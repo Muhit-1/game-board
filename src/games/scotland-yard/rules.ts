@@ -49,31 +49,6 @@ export function validateDetectiveMove(state: GameState, slot: number, station: n
   return { valid: false, reason: `There is no ${ticketName(ticket)} link from ${from} to ${station}.` };
 }
 
-/** Every move Mr. X could make now (used to spot when he is trapped, never shown). */
-export function mrXMoves(state: Pick<GameState, 'players' | 'positions' | 'tickets'>): Move[] {
-  const mrX = mrXOf(state.players);
-  const from = state.positions[mrX.slot];
-  const tickets = state.tickets[mrX.slot];
-  const moves: Move[] = [];
-  for (const transport of TRANSPORTS) {
-    const normal = ticketFor(transport);
-    const ticketsToTry: MoveTicket[] = [];
-    if (normal && tickets[normal] > 0) ticketsToTry.push(normal);
-    if (tickets.black > 0) ticketsToTry.push('black');
-    for (const station of neighbours(from, transport)) {
-      if (occupiedByDetective(state, station)) continue;
-      ticketsToTry.forEach((ticket) => moves.push({ station, ticket, transport }));
-    }
-  }
-  return moves;
-}
-
-/** Deliberately vague on failure: the pad must not hint at where Mr. X could go. */
-export function validateMrXMove(state: GameState, station: number, ticket: MoveTicket): MoveResult {
-  const ok = mrXMoves(state).some((m) => m.station === station && m.ticket === ticket);
-  return ok ? { valid: true } : { valid: false, reason: "You can't go there with that ticket." };
-}
-
 export function ticketName(ticket: MoveTicket): string {
   return { taxi: 'taxi', bus: 'bus', ug: 'underground', black: 'black' }[ticket];
 }

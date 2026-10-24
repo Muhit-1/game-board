@@ -9,7 +9,8 @@ import { GemIcon } from '../../../shared/components/GemIcon';
 import { GemPicker } from '../../../shared/components/GemPicker';
 import { usePointerReorder } from '../../../shared/hooks/usePointerReorder';
 import { getGem } from '../../../shared/theme/gems';
-import { ChevronRight, EyeOff, GripVertical, Shuffle } from '../../../shared/icons';
+import { ChevronRight, GripVertical, Shuffle, Trophy } from '../../../shared/icons';
+import { MrXTicketPad } from './MrXTicketPad';
 import { TicketChip } from './TicketChip';
 
 /** Which round the table is in: Mr. X's next cell while he is to move, otherwise the round whose detectives are moving. */
@@ -23,17 +24,22 @@ function nextRevealRound(round: number): number | null {
 
 interface TurnCardProps {
   state: GameState;
-  onOpenSecret: () => void;
+  dispatch: Dispatch<GameAction>;
+  onMrXLogged: () => void;
+  onEnd: (reason: 'caught' | 'trapped') => void;
 }
 
+const subtleButton = 'rounded-lg border border-[var(--line)] px-3 py-2 text-label font-bold uppercase tracking-caps text-parchment hover:bg-walnut-2';
+
 /** "Now playing": who is to move and what to do about it. */
-export function TurnCard({ state, onOpenSecret }: TurnCardProps) {
+export function TurnCard({ state, dispatch, onMrXLogged, onEnd }: TurnCardProps) {
   const mrX = mrXOf(state.players);
   const current = state.turn.side === 'mrx' ? mrX : state.players.find((p) => p.slot === (state.turn as { slot: number }).slot);
   const gem = current ? getGem(current.gem) : undefined;
   if (!current || !gem) return null;
   const round = currentRound(state);
   const reveal = nextRevealRound(round);
+  const revealing = state.revealPending !== null;
 
   return (
     <div className="rounded-2xl border bg-walnut p-3 shadow-deep" style={{ borderColor: gem.glow }}>
@@ -46,24 +52,37 @@ export function TurnCard({ state, onOpenSecret }: TurnCardProps) {
       <div className="mb-2.5 mt-2 flex items-center gap-2.5">
         <GemIcon gem={gem} size={38} />
         <div className="min-w-0">
-          <div className="text-micro font-bold uppercase tracking-caps text-parchment-dim">{state.winner ? 'Game over' : state.turn.side === 'mrx' ? 'Mr. X to move' : 'Detective to move'}</div>
+          <div className="text-micro font-bold uppercase tracking-caps text-parchment-dim">
+            {state.winner ? 'Game over' : revealing ? 'Reveal round' : state.turn.side === 'mrx' ? 'Mr. X to move' : 'Detective to move'}
+          </div>
           <div className="truncate font-display text-[24px] font-semibold leading-tight text-parchment">{current.name}</div>
         </div>
       </div>
       {state.winner ? (
-        <div className="text-small font-semibold leading-snug text-parchment">
-          {state.winner.side === 'detectives' ? 'The detectives win.' : 'Mr. X gets away.'} Mr. X's real position is marked on the map.
+        <div className="text-small font-semibold leading-snug text-parchment">{state.winner.side === 'detectives' ? 'The detectives win.' : 'Mr. X gets away.'}</div>
+      ) : revealing ? (
+        <div>
+          <p className="mb-2 text-small font-semibold leading-snug text-parchment">
+            {mrX.name} says which station he is on. Tap it on the map to mark it.
+          </p>
+          <button type="button" onClick={() => dispatch({ type: 'SKIP_REVEAL' })} className={`w-full ${subtleButton}`}>
+            Skip marking
+          </button>
         </div>
       ) : state.turn.side === 'mrx' ? (
-        <button
-          type="button"
-          onClick={onOpenSecret}
-          className="flex w-full items-center justify-center gap-2 rounded-lg border border-brass bg-brass px-3 py-2.5 text-label font-bold uppercase tracking-caps text-charred-oak transition-colors hover:bg-brass-soft"
-        >
-          <EyeOff size={15} /> Secret move <kbd className="font-mono text-micro opacity-70">X</kbd>
-        </button>
+        <>
+          <MrXTicketPad state={state} dispatch={dispatch} onLogged={onMrXLogged} />
+          <button type="button" onClick={() => onEnd('trapped')} className="mt-2 w-full text-label font-semibold text-parchment-dim underline-offset-4 hover:text-parchment hover:underline">
+            Mr. X has nowhere to go
+          </button>
+        </>
       ) : (
-        <div className="text-small font-semibold leading-snug text-parchment">Tap one of the glowing stations on the map.</div>
+        <>
+          <div className="text-small font-semibold leading-snug text-parchment">Tap one of the glowing stations on the map.</div>
+          <button type="button" onClick={() => onEnd('caught')} className={`mt-2.5 flex w-full items-center justify-center gap-2 ${subtleButton}`}>
+            <Trophy size={14} className="text-brass" /> Caught Mr. X
+          </button>
+        </>
       )}
     </div>
   );
@@ -76,7 +95,7 @@ export function ArrangeCard({ dispatch }: { dispatch: Dispatch<GameAction> }) {
       <div className="text-micro font-bold uppercase tracking-kicker text-brass-soft">Before we start</div>
       <div className="mt-1 font-display text-[22px] font-semibold leading-tight text-parchment">Organize your players</div>
       <p className="mb-3 mt-2 text-label leading-snug text-parchment-dim">
-        Drag the detectives into turn order, tap a colour for each player, and shuffle the start stations if you like. Mr. X's start stays hidden.
+        Drag the detectives into turn order, tap a colour for each player, and shuffle the start stations if you like. Mr. X picks his own start station and writes it on his notepad.
       </p>
       <div className="flex flex-col gap-2">
         <button
@@ -131,7 +150,7 @@ function NameLabel({ player, editing, onStart, onStop, dispatch }: { player: Pla
   );
 }
 
-/** Mr. X (hidden position) on top, then the detectives — drag them to change the turn order at any time. */
+/** Mr. X (tickets and last-seen station only) on top, then the detectives — drag them to change the turn order at any time. */
 export function PlayerList({ state, dispatch }: PlayerListProps) {
   const [editingSlot, setEditingSlot] = useState<number | null>(null);
   const mrX = mrXOf(state.players);
@@ -172,14 +191,16 @@ export function PlayerList({ state, dispatch }: PlayerListProps) {
             <NameLabel player={mrX} editing={editingSlot === mrX.slot} onStart={() => setEditingSlot(mrX.slot)} onStop={() => setEditingSlot(null)} dispatch={dispatch} />
           </div>
           <span className="rounded-md border border-[#666] bg-black px-1.5 py-0.5 text-micro font-bold uppercase tracking-caps text-white">Mr. X</span>
-          <span className="w-7 text-right font-mono text-[20px] font-bold text-parchment-dim" title="Mr. X's station is secret">
-            ?
-          </span>
         </div>
         <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
           <TicketChip kind="black" count={state.tickets[mrX.slot]?.black ?? 0} />
           <TicketChip kind="double" count={state.tickets[mrX.slot]?.double ?? 0} />
           <span className="text-label font-semibold text-parchment-dim">{state.lastSeen ? `last seen ${state.lastSeen.station} · R${state.lastSeen.round}` : 'not seen yet'}</span>
+          {state.lastSeen && state.phase === 'playing' && state.revealPending === null && (
+            <button type="button" onClick={() => dispatch({ type: 'REDO_LAST_SEEN' })} className="text-label font-semibold text-brass-soft underline-offset-4 hover:underline">
+              Change
+            </button>
+          )}
         </div>
         {arranging && (
           <div className="mt-2">

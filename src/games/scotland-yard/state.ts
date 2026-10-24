@@ -1,7 +1,7 @@
 import type { GameState, LogEntry, MoveTicket, Player, Snapshot, Tickets, Winner } from './types';
 import type { TableThemeId } from '../../shared/theme/tableThemes';
-import { DETECTIVE_STARTS, MRX_STARTS, REVEAL_ROUNDS, TOTAL_ROUNDS } from './data/graph';
-import { DETECTIVE_START_TICKETS, detectiveMoves, detectivesOf, mrXMoves, mrXOf, mrXStartTickets, validateDetectiveMove, validateMrXMove } from './rules';
+import { DETECTIVE_STARTS, REVEAL_ROUNDS, TOTAL_ROUNDS } from './data/graph';
+import { DETECTIVE_START_TICKETS, detectiveMoves, detectivesOf, mrXOf, mrXStartTickets, validateDetectiveMove } from './rules';
 import { loadLook } from './prefs';
 
 export type { GameState } from './types';
@@ -17,6 +17,7 @@ export function createInitialState(): GameState {
     tickets: {},
     log: [],
     lastSeen: null,
+    revealPending: null,
     turn: { side: 'mrx' },
     doublePending: false,
     winner: null,
@@ -36,8 +37,15 @@ export type GameAction =
   | { type: 'SET_PLAYER_GEM'; slot: number; gem: string }
   | { type: 'REORDER_PLAYERS'; slot: number; toIndex: number }
   | { type: 'RENAME_PLAYER'; slot: number; name: string }
-  | { type: 'MRX_MOVE'; station: number; ticket: MoveTicket; double?: boolean }
+  /** Mr. X made his move on paper and says which ticket he used; `double` starts a double move. */
+  | { type: 'MRX_TICKET'; ticket: MoveTicket; double?: boolean }
   | { type: 'DETECTIVE_MOVE'; station: number; ticket: MoveTicket }
+  /** The station Mr. X named on a reveal round (or, with `redo`, a correction of the last one). */
+  | { type: 'SET_LAST_SEEN'; station: number }
+  | { type: 'SKIP_REVEAL' }
+  | { type: 'REDO_LAST_SEEN' }
+  /** The table decides the chase is over: a detective landed on Mr. X, or he had nowhere to go. */
+  | { type: 'END_GAME'; reason: 'caught' | 'trapped' }
   | { type: 'UNDO' }
   | { type: 'NEW_GAME' }
   | { type: 'SET_TABLE_THEME'; theme: TableThemeId };
@@ -51,7 +59,7 @@ function shuffle<T>(items: T[]): T[] {
   return arr;
 }
 
-/** Random start stations from the start cards, and everyone's starting tickets. */
+/** Random start stations for the detectives, and everyone's starting tickets. */
 function dealStarts(players: Player[]): Pick<GameState, 'positions' | 'tickets'> {
   const detectives = detectivesOf(players);
   const starts = shuffle(DETECTIVE_STARTS);
@@ -61,9 +69,7 @@ function dealStarts(players: Player[]): Pick<GameState, 'positions' | 'tickets'>
     positions[d.slot] = starts[i];
     tickets[d.slot] = { ...DETECTIVE_START_TICKETS };
   });
-  const mrX = mrXOf(players);
-  positions[mrX.slot] = shuffle(MRX_STARTS)[0];
-  tickets[mrX.slot] = mrXStartTickets(detectives.length);
+  tickets[mrXOf(players).slot] = mrXStartTickets(detectives.length);
   return { positions, tickets };
 }
 
@@ -74,6 +80,7 @@ function snapshot(state: GameState): Snapshot {
     tickets: state.tickets,
     log: state.log,
     lastSeen: state.lastSeen,
+    revealPending: state.revealPending,
     turn: state.turn,
     doublePending: state.doublePending,
     winner: state.winner,
@@ -84,9 +91,8 @@ function withHistory(state: GameState): GameState {
   return { ...state, history: [...state.history.slice(-(HISTORY_LIMIT - 1)), snapshot(state)] };
 }
 
-function finish(state: GameState, winner: Omit<Winner, 'station'>): GameState {
-  const station = state.positions[mrXOf(state.players).slot];
-  return { ...state, phase: 'finished', winner: { ...winner, station }, eventSeq: state.eventSeq + 1 };
+function finish(state: GameState, winner: Winner): GameState {
+  return { ...state, phase: 'finished', winner, revealPending: null, eventSeq: state.eventSeq + 1 };
 }
 
 /** The first detective at or after `startIndex` (turn order) who can actually move; the others are skipped. */
@@ -123,14 +129,25 @@ function afterDetective(state: GameState, slot: number): GameState {
   }
   const base = withSkips(state, next.skipped);
   if (base.log.length >= TOTAL_ROUNDS) return finish(base, { side: 'mrx', reason: 'escaped', by: null });
-  if (mrXMoves(base).length === 0) return finish(base, { side: 'detectives', reason: 'trapped', by: null });
   return { ...base, turn: { side: 'mrx' }, turnCue: base.turnCue + 1 };
 }
 
 export function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
     case 'START_GAME':
-      return { ...state, phase: 'arrange', players: action.players, ...dealStarts(action.players), log: [], lastSeen: null, turn: { side: 'mrx' }, doublePending: false, winner: null, history: [] };
+      return {
+        ...state,
+        phase: 'arrange',
+        players: action.players,
+        ...dealStarts(action.players),
+        log: [],
+        lastSeen: null,
+        revealPending: null,
+        turn: { side: 'mrx' },
+        doublePending: false,
+        winner: null,
+        history: [],
+      };
 
     case 'RESHUFFLE_STARTS':
       if (state.phase !== 'arrange') return state;
@@ -170,20 +187,18 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       return { ...state, players: state.players.map((p) => (p.slot === action.slot ? { ...p, name } : p)) };
     }
 
-    case 'MRX_MOVE': {
-      if (state.phase !== 'playing' || state.turn.side !== 'mrx') return state;
-      if (!validateMrXMove(state, action.station, action.ticket).valid) return state;
+    case 'MRX_TICKET': {
+      if (state.phase !== 'playing' || state.turn.side !== 'mrx' || state.revealPending !== null) return state;
       const mrX = mrXOf(state.players);
-      const startsDouble = !!action.double && !state.doublePending && state.tickets[mrX.slot].double > 0 && state.log.length <= TOTAL_ROUNDS - 2;
-      const round = state.log.length + 1;
-      const revealed = REVEAL_ROUNDS.includes(round) ? action.station : null;
-      const entry: LogEntry = { round, ticket: action.ticket, double: startsDouble || state.doublePending, revealed };
       const mrXTickets = state.tickets[mrX.slot];
+      if (action.ticket === 'black' && mrXTickets.black <= 0) return state;
+      const startsDouble = !!action.double && !state.doublePending && mrXTickets.double > 0 && state.log.length <= TOTAL_ROUNDS - 2;
+      const round = state.log.length + 1;
+      const reveals = REVEAL_ROUNDS.includes(round);
+      const entry: LogEntry = { round, ticket: action.ticket, double: startsDouble || state.doublePending, revealed: null };
       const eventSeq = state.eventSeq + 1;
-      let next: GameState = withHistory(state);
-      next = {
-        ...next,
-        positions: { ...state.positions, [mrX.slot]: action.station },
+      const next: GameState = {
+        ...withHistory(state),
         tickets: {
           ...state.tickets,
           [mrX.slot]: {
@@ -193,31 +208,49 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           },
         },
         log: [...state.log, entry],
-        lastSeen: revealed !== null ? { station: revealed, round } : state.lastSeen,
-        revealEvent: revealed !== null ? { id: eventSeq, round, station: revealed } : state.revealEvent,
-        eventSeq: revealed !== null ? eventSeq : state.eventSeq,
+        revealPending: reveals ? round : null,
+        revealEvent: reveals ? { id: eventSeq, round } : state.revealEvent,
+        eventSeq: reveals ? eventSeq : state.eventSeq,
         doublePending: startsDouble,
       };
-      if (startsDouble) {
-        // The second move of the double is still to come; if there is nowhere left to go, Mr. X is trapped.
-        return mrXMoves(next).length === 0 ? finish(next, { side: 'detectives', reason: 'trapped', by: null }) : next;
-      }
-      return startDetectives(next);
+      // The second move of a double is still to come; otherwise it is the detectives' turn.
+      return startsDouble ? next : startDetectives(next);
     }
 
     case 'DETECTIVE_MOVE': {
-      if (state.phase !== 'playing' || state.turn.side !== 'detective') return state;
+      if (state.phase !== 'playing' || state.turn.side !== 'detective' || state.revealPending !== null) return state;
       const slot = state.turn.slot;
       if (!validateDetectiveMove(state, slot, action.station, action.ticket).valid) return state;
-      const mrX = mrXOf(state.players);
-      let next = withHistory(state);
-      next = {
-        ...next,
+      const next: GameState = {
+        ...withHistory(state),
         positions: { ...state.positions, [slot]: action.station },
         tickets: { ...state.tickets, [slot]: { ...state.tickets[slot], [action.ticket]: state.tickets[slot][action.ticket as 'taxi' | 'bus' | 'ug'] - 1 } },
       };
-      if (action.station === state.positions[mrX.slot]) return finish(next, { side: 'detectives', reason: 'caught', by: slot });
       return afterDetective(next, slot);
+    }
+
+    case 'SET_LAST_SEEN': {
+      if (state.revealPending === null) return state;
+      const round = state.revealPending;
+      return {
+        ...withHistory(state),
+        lastSeen: { station: action.station, round },
+        revealPending: null,
+        log: state.log.map((e) => (e.round === round ? { ...e, revealed: action.station } : e)),
+      };
+    }
+
+    case 'SKIP_REVEAL':
+      return state.revealPending === null ? state : { ...withHistory(state), revealPending: null };
+
+    case 'REDO_LAST_SEEN':
+      if (state.phase !== 'playing' || !state.lastSeen || state.revealPending !== null) return state;
+      return { ...withHistory(state), revealPending: state.lastSeen.round };
+
+    case 'END_GAME': {
+      if (state.phase !== 'playing') return state;
+      const by = state.turn.side === 'detective' ? state.turn.slot : null;
+      return finish(withHistory(state), { side: 'detectives', reason: action.reason, by: action.reason === 'caught' ? by : null });
     }
 
     case 'UNDO': {
