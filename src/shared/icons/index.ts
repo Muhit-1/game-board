@@ -42,4 +42,5 @@ export {
   Maximize,
   Expand,
   Shrink,
+  Pin,
 } from 'lucide-react';

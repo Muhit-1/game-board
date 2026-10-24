@@ -70,7 +70,8 @@ export function useMapCamera(svgRef: RefObject<SVGSVGElement>) {
 
   // Wheel zoom needs a non-passive listener to stop the page from scrolling.
   useEffect(() => {
-    const svg = svgRef.current;
+    // Listen on the wrapper around the map so the wheel also works over the layers stacked on top of the svg.
+    const svg = (svgRef.current?.parentElement ?? svgRef.current) as HTMLElement | null;
     if (!svg) return;
     function onWheel(e: WheelEvent) {
       const g = geometry();
@@ -83,7 +84,7 @@ export function useMapCamera(svgRef: RefObject<SVGSVGElement>) {
     return () => svg.removeEventListener('wheel', onWheel);
   }, [svgRef, geometry, zoomAround]);
 
-  function onPointerDown(e: ReactPointerEvent<SVGSVGElement>) {
+  function onPointerDown(e: ReactPointerEvent<Element>) {
     if (pointers.current.size === 0) {
       dragged.current = false;
       travelled.current = 0;
@@ -91,7 +92,7 @@ export function useMapCamera(svgRef: RefObject<SVGSVGElement>) {
     pointers.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
   }
 
-  function onPointerMove(e: ReactPointerEvent<SVGSVGElement>) {
+  function onPointerMove(e: ReactPointerEvent<Element>) {
     const previous = pointers.current.get(e.pointerId);
     if (!previous) return;
     const g = geometry();
@@ -120,12 +121,14 @@ export function useMapCamera(svgRef: RefObject<SVGSVGElement>) {
     pointers.current.set(e.pointerId, next);
   }
 
-  function onPointerEnd(e: ReactPointerEvent<SVGSVGElement>) {
+  function onPointerEnd(e: ReactPointerEvent<Element>) {
     pointers.current.delete(e.pointerId);
   }
 
   return {
     camera,
+    /** Screen pixel → map unit helpers for the current view (used by the magnifier). */
+    geometry,
     zoomed: camera.w < MAP_WIDTH,
     zoomBy,
     reset,

@@ -142,3 +142,24 @@ body.theme-hub {
 .turn-banner {
   animation: banner-life 1.9s ease both;
 }
+
+/* Scotland Yard: the stations a detective can move to blink, so they are easy to find on a busy map.
+   The layer fades as a whole (compositor only), so the big map underneath is never repainted. */
+@keyframes sy-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.2;
+  }
+}
+.sy-blink {
+  animation: sy-blink 1.1s ease-in-out infinite;
+  will-change: opacity;
+}
+@media (prefers-reduced-motion: reduce) {
+  .sy-blink {
+    animation: none;
+  }
+}
