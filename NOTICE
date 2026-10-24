@@ -14,7 +14,7 @@ rescaled into this project's own map space.
 
 Only the station graph (which stations are linked by taxi, bus and underground,
 and where they sit on the map) is used. The board artwork of the original game
-is not included; this project draws its own map.
+is not included; this project draws its own map (see tools/map). The outlines of the river and the larger parks in that drawing were traced from a published illustrated map of central London so the geography is right; none of its artwork is used.
 
 Scotland Yard is a trademark of its respective owners. This is an unofficial,
 non-commercial fan companion tool.

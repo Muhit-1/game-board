@@ -49,7 +49,7 @@ The board always takes as much of the screen as possible; the panels sit in the 
 
 What it keeps track of: every detective's tickets (they start with 10 taxi, 8 bus and 4 underground; Mr. X has black tickets for the three ferries and as wildcards, and two double moves), the legality of each detective move, detectives who have to be skipped, the last-seen marker, and undo. Pinch, scroll or use the zoom buttons to look closer at the map; on phones the panels sit under it.
 
-Station numbers and connections come from the open-source [tim-koehler/ScotlandYard](https://github.com/tim-koehler/ScotlandYard) project (see `NOTICE`). The London map itself is drawn in code for this site; none of the original game's artwork is used. The detectives' start-station list is entered from memory — check it against your own box if you care.
+Station numbers and connections come from the open-source [tim-koehler/ScotlandYard](https://github.com/tim-koehler/ScotlandYard) project (see `NOTICE`). The London map is drawn by a small program in `tools/map` (streets, terraced buildings, parks, the Thames and the route lines, with the station numbers added live on top); none of the original game's artwork is used. To redraw it: `cd tools/map && npm install && npm run build`. The detectives' start-station list is entered from memory — check it against your own box if you care.
 
 ## Run it locally
 
@@ -75,7 +75,8 @@ scotland-yard/index.html       page entry points (hub and each game)
 src/hub/                       the landing page and the list of games
 src/shared/                    components, icons, sounds and themes shared by every game
 src/games/catan/               rules, state, scoring, board drawing and the Catan screens
-src/games/scotland-yard/       station data, rules, state, the drawn London map and the screens
+src/games/scotland-yard/       station data, rules, state, the London map images and the screens
+tools/map/                     the program that draws the London map (run only when the map art changes)
 ```
 
 Adding another game means a new folder under `src/games/`, an entry page, one line in `src/hub/games-registry.ts` and one build input in `vite.config.ts`.

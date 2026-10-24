@@ -1,0 +1,8 @@
+{
+  "name": "scotland-yard-map-tools",
+  "private": true,
+  "type": "module",
+  "description": "Draws the illustrated London map for Scotland Yard. Run from this folder: npm install && npm run build",
+  "scripts": { "build": "node build.mjs" },
+  "dependencies": { "@napi-rs/canvas": "^0.1.65" }
+}

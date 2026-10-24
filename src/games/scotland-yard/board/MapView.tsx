@@ -1,9 +1,10 @@
-import { memo, useEffect, useReducer, useRef } from 'react';
+import { memo, useEffect, useRef, useState } from 'react';
 import { useMapCamera } from './useMapCamera';
 import { Maximize, Minus, Plus } from '../../../shared/icons';
 import { MAP_HEIGHT, MAP_WIDTH, STATIONS } from '../data/stations';
 import { STATION_BY_ID, stationKind } from '../data/graph';
-import { MAP_EDGES, ensureMapGround, peekMapGround, roadPath } from './mapArt';
+import mapQuick from './assets/london-1800.webp';
+import mapSharp from './assets/london-3900.webp';
 import type { LastSeen, MoveTicket } from '../types';
 import { GEMS, getGem } from '../../../shared/theme/gems';
 import { TICKET_COLORS } from '../ticketStyle';
@@ -24,73 +25,54 @@ interface MapViewProps {
   onStationClick: (station: number) => void;
 }
 
-/** Paints the ground bitmap in a separate task so the page stays responsive; returns it once ready. */
-function useMapGround(): string | null {
-  const [, refresh] = useReducer((n: number) => n + 1, 0);
+/** The drawn London map: a quick 1800 px image first, the 3900 px one swapped in once it has loaded (for zooming). */
+function useMapImage(): string {
+  const [sharp, setSharp] = useState(false);
   useEffect(() => {
-    if (peekMapGround()) return;
     const timer = window.setTimeout(() => {
-      ensureMapGround();
-      refresh();
-    }, 30);
+      const img = new Image();
+      img.onload = () => setSharp(true);
+      img.src = mapSharp;
+    }, 300);
     return () => window.clearTimeout(timer);
   }, []);
-  return peekMapGround();
+  return sharp ? mapSharp : mapQuick;
 }
 
-const ROAD_STYLES = {
-  taxi: { casing: 19, line: 11, color: '#f3d54e' },
-  bus: { casing: 21, line: 11, color: '#e9c93e' },
-  ug: { casing: 24, line: 9, color: '#d6403f' },
-} as const;
+const TAG_SCALE = 0.85;
+const TAG_LINE = '#33220f';
+const TAG_FONT = "'Archivo Black', 'Arial Black', Arial, sans-serif";
 
-/** Roads and station discs. Static for the whole game, so it is memoised and never redrawn on a move. */
-const MapBase = memo(function MapBase({ ground }: { ground: string | null }) {
-  const casing = MAP_EDGES.filter((e) => e.transport !== 'ferry');
+/** One station tag: cream rounded tag, teal top cap when a bus stops there, pink for underground stations. */
+function StationTag({ id, x, y, bus, underground }: { id: number; x: number; y: number; bus: boolean; underground: boolean }) {
+  return (
+    <g transform={`translate(${x} ${y}) scale(${TAG_SCALE})`}>
+      <path d="M-17 -18 A17 12.5 0 0 1 17 -18 Z" fill={bus ? '#58c4a7' : '#f5c23a'} stroke={TAG_LINE} strokeWidth={4} strokeLinejoin="round" />
+      <path d="M-17 18 A17 12.5 0 0 0 17 18 Z" fill="#f5c23a" stroke={TAG_LINE} strokeWidth={4} strokeLinejoin="round" />
+      <path
+        d="M-22 -18 L22 -18 Q31 -18 31 -9 L31 9 Q31 18 22 18 L-22 18 Q-31 18 -31 9 L-31 -9 Q-31 -18 -22 -18 Z"
+        fill={underground ? '#dc3b72' : '#f9e293'}
+        stroke={TAG_LINE}
+        strokeWidth={4.4}
+        strokeLinejoin="round"
+      />
+      <rect x={-25} y={-14.5} width={50} height={3} fill="#fff" opacity={0.35} />
+      <text x={0} y={1.5} textAnchor="middle" dominantBaseline="central" fontFamily={TAG_FONT} fontWeight={800} fontSize={id > 99 ? 27 : 30} fill={underground ? '#fff' : '#25190b'}>
+        {id}
+      </text>
+    </g>
+  );
+}
+
+/** The map picture (streets, buildings, parks, river and route lines are baked in) and the live number tags. Static, so never redrawn on a move. */
+const MapBase = memo(function MapBase({ image }: { image: string }) {
   return (
     <>
-      <rect width={MAP_WIDTH} height={MAP_HEIGHT} fill="#e6d3a5" />
-      {ground && <image href={ground} x={0} y={0} width={MAP_WIDTH} height={MAP_HEIGHT} />}
-      {casing.map((e) => (
-        <path key={`c-${e.transport}-${e.a.id}-${e.b.id}`} d={roadPath(e.a, e.b)} fill="none" stroke="#fffaf0" strokeWidth={ROAD_STYLES[e.transport as 'taxi'].casing} strokeLinecap="round" />
-      ))}
-      {MAP_EDGES.filter((e) => e.transport === 'taxi').map((e) => (
-        <path key={`t-${e.a.id}-${e.b.id}`} d={roadPath(e.a, e.b)} fill="none" stroke={ROAD_STYLES.taxi.color} strokeWidth={ROAD_STYLES.taxi.line} strokeLinecap="round" />
-      ))}
-      {MAP_EDGES.filter((e) => e.transport === 'bus').map((e) => (
-        <g key={`b-${e.a.id}-${e.b.id}`}>
-          <path d={roadPath(e.a, e.b)} fill="none" stroke="#e9c93e" strokeWidth={11} strokeLinecap="round" />
-          <path d={roadPath(e.a, e.b)} fill="none" stroke="#1d9b9a" strokeWidth={7} strokeLinecap="round" />
-        </g>
-      ))}
-      {MAP_EDGES.filter((e) => e.transport === 'ug').map((e) => (
-        <path key={`u-${e.a.id}-${e.b.id}`} d={roadPath(e.a, e.b)} fill="none" stroke="#d6403f" strokeWidth={9} strokeLinecap="round" strokeDasharray="26 16" />
-      ))}
-      {MAP_EDGES.filter((e) => e.transport === 'ferry').map((e) => (
-        <path key={`f-${e.a.id}-${e.b.id}`} d={roadPath(e.a, e.b)} fill="none" stroke="#1c1c1c" strokeWidth={8} strokeLinecap="round" strokeDasharray="24 16" />
-      ))}
+      <rect width={MAP_WIDTH} height={MAP_HEIGHT} fill="#fdf7ea" />
+      <image href={image} x={0} y={0} width={MAP_WIDTH} height={MAP_HEIGHT} />
       {STATIONS.map((s) => {
         const kind = stationKind(s);
-        const underground = kind === 'ug';
-        return (
-          <g key={s.id}>
-            <circle cx={s.x} cy={s.y} r={31} fill={underground ? '#d6403f' : '#fff1bf'} stroke="#6b4a1f" strokeWidth={5} />
-            {kind !== 'taxi' && <path d={`M${s.x - 25} ${s.y + 10} A27 27 0 0 0 ${s.x + 25} ${s.y + 10} Z`} fill="#1d9b9a" opacity={0.9} />}
-            <circle cx={s.x} cy={s.y} r={31} fill="none" stroke="#6b4a1f" strokeWidth={5} />
-            <text
-              x={s.x}
-              y={s.y - 3}
-              textAnchor="middle"
-              dominantBaseline="central"
-              fontFamily="Karla, sans-serif"
-              fontWeight={700}
-              fontSize={s.id > 99 ? 25 : 28}
-              fill={underground ? '#fff' : '#2a2118'}
-            >
-              {s.id}
-            </text>
-          </g>
-        );
+        return <StationTag key={s.id} id={s.id} x={s.x} y={s.y} bus={kind !== 'taxi'} underground={kind === 'ug'} />;
       })}
     </>
   );
@@ -127,7 +109,7 @@ function Pawn({ x, y, gem }: { x: number; y: number; gem: string }) {
 }
 
 export function MapView({ pawns, lastSeen, targets, picking, onStationClick }: MapViewProps) {
-  const ground = useMapGround();
+  const image = useMapImage();
   const seen = lastSeen ? STATION_BY_ID.get(lastSeen.station) : undefined;
 
   const svgRef = useRef<SVGSVGElement>(null);
@@ -144,7 +126,7 @@ export function MapView({ pawns, lastSeen, targets, picking, onStationClick }: M
       {...handlers}
     >
       <PawnDefs />
-      <MapBase ground={ground} />
+      <MapBase image={image} />
 
       {/* Where Mr. X was last seen (a ghost, never his real position). */}
       {seen && lastSeen && (
@@ -174,11 +156,11 @@ export function MapView({ pawns, lastSeen, targets, picking, onStationClick }: M
         const color = TICKET_COLORS[tickets[0]];
         return (
           <g key={`target-${id}`} onClick={() => !wasDragged() && onStationClick(id)} style={{ cursor: 'pointer' }}>
-            <circle cx={s.x} cy={s.y} r={46} fill={color} fillOpacity={0.24} stroke={color} strokeWidth={9} />
+            <circle cx={s.x} cy={s.y} r={44} fill={color} fillOpacity={0.24} stroke={color} strokeWidth={9} />
             {tickets.slice(1).map((t, i) => (
               <circle key={t} cx={s.x - 12 + i * 24} cy={s.y - 58} r={9} fill={TICKET_COLORS[t]} stroke="#fff" strokeWidth={3} />
             ))}
-            <circle cx={s.x} cy={s.y} r={46} fill="transparent" />
+            <circle cx={s.x} cy={s.y} r={44} fill="transparent" />
           </g>
         );
       })}
@@ -192,7 +174,7 @@ export function MapView({ pawns, lastSeen, targets, picking, onStationClick }: M
       {picking &&
         STATIONS.map((st) => (
           <g key={`pick-${st.id}`} onClick={() => !wasDragged() && onStationClick(st.id)} style={{ cursor: 'pointer' }}>
-            <circle cx={st.x} cy={st.y} r={46} fill="rgba(255,255,255,.18)" stroke="#fff" strokeWidth={6} strokeOpacity={0.85} />
+            <circle cx={st.x} cy={st.y} r={44} fill="rgba(255,255,255,.18)" stroke="#fff" strokeWidth={6} strokeOpacity={0.85} />
           </g>
         ))}
     </svg>
